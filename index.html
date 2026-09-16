@@ -7,7 +7,7 @@
 <link rel="manifest" href="./manifest.json">
 <meta name="theme-color" content="#0f1726">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="IA terrain">
 <link rel="apple-touch-icon" href="./apple-touch-icon.png">
 <style>
@@ -17,11 +17,14 @@
 }
 *{box-sizing:border-box}
 body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:linear-gradient(160deg,#0d1422,#14213a);color:var(--txt);line-height:1.5;margin:0;min-height:100vh}
-.wrap{max-width:880px;margin:0 auto;padding:18px 16px 60px}
-header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px;flex-wrap:wrap}
-header h1{font-size:19px;margin:0;font-weight:700;cursor:pointer}
+.wrap{max-width:880px;margin:0 auto;padding:0 calc(16px + env(safe-area-inset-left)) calc(60px + env(safe-area-inset-bottom)) calc(16px + env(safe-area-inset-right))}
+header{position:sticky;top:0;z-index:10;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:0 -16px 18px;padding:calc(10px + env(safe-area-inset-top)) 16px 10px;background:rgba(15,23,38,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+header h1{font-size:18px;margin:0;font-weight:700;cursor:pointer;padding:6px 0;min-height:44px;display:flex;flex-direction:column;justify-content:center}
 header h1 small{display:block;font-size:12.5px;color:var(--muted);font-weight:400}
 .stats{display:flex;gap:8px;flex-wrap:wrap}
+.navback{flex:none;width:44px;height:44px;border-radius:12px;background:var(--surface2);border:1px solid var(--line);color:var(--txt);font-size:20px;line-height:1;cursor:pointer;font-family:inherit}
+.navback:hover{border-color:var(--accent)}
+.navback[hidden]{display:none}
 .pill{background:var(--surface2);border:1px solid var(--line);border-radius:20px;padding:5px 11px;font-size:12.5px;white-space:nowrap}
 .pill b{color:var(--gold)}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:22px;margin-bottom:14px}
@@ -103,7 +106,9 @@ input[type=text],input[type=number],input[type=url]{width:100%;background:#0c132
 .next{background:#11203a;border:1px dashed var(--line);border-radius:12px;padding:14px;margin-top:14px;font-size:14px}
 .next b{color:var(--gold)}
 @media(max-width:560px){
-  .wrap{padding:12px 12px 50px}
+  .wrap{padding:0 calc(12px + env(safe-area-inset-left)) calc(50px + env(safe-area-inset-bottom)) calc(12px + env(safe-area-inset-right))}
+  header{margin:0 -12px 14px;padding:calc(8px + env(safe-area-inset-top)) 12px 8px}
+  header h1 small{font-size:11.5px}
   .grid{grid-template-columns:1fr}
   .btn{flex:1 1 auto;justify-content:center}
   .opt{font-size:15px;padding:13px}
@@ -116,6 +121,7 @@ input[type=text],input[type=number],input[type=url]{width:100%;background:#0c132
 <body>
 <div class="wrap">
   <header>
+    <button id="backbtn" class="navback" aria-label="Retour" hidden>←</button>
     <h1 id="home-link">IA sur le terrain <small>Parcours de Paco · 16 séances · 16 missions</small></h1>
     <div class="stats" id="stats"></div>
   </header>
@@ -1088,7 +1094,10 @@ const nz=s=>(s||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,""
 const shuffled=a=>{const b=[...a];for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];}return b;};
 const hhmm=()=>{const d=new Date();return String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0");};
 let toastT; function toast(m){ const t=document.getElementById("toast"); t.textContent=m; t.classList.add("on"); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove("on"),2200); }
-function go(v,...a){ window.scrollTo(0,0); v(...a); }
+const NAV=[];
+function go(v,...a){ NAV.push([v,a]); if(NAV.length>40) NAV.shift(); window.scrollTo(0,0); v(...a); syncBack(); }
+function navBack(){ if(NAV.length<2) return; NAV.pop(); const [v,a]=NAV[NAV.length-1]; window.scrollTo(0,0); v(...a); syncBack(); }
+function syncBack(){ const b=document.getElementById("backbtn"); if(b) b.hidden = NAV.length<2; }
 function syncHeader(){
   const done=Object.keys(S.days).length;
   document.getElementById("stats").innerHTML=
@@ -1313,8 +1322,10 @@ function exportProgress(){ const blob=new Blob([JSON.stringify(S,null,2)],{type:
 function importProgress(file){ const r=new FileReader(); r.onload=()=>{ try{ S=Object.assign({},DEF,JSON.parse(r.result)); save(); syncHeader(); go(home); toast("Progression importée"); }catch(e){ alert("Fichier invalide."); } }; r.readAsText(file); }
 
 /* ===================== 5. INIT ===================== */
-probeStorage(); touchStreak(); syncHeader(); home();
-document.getElementById("home-link").onclick=()=>go(home);
+probeStorage(); touchStreak(); syncHeader(); go(home);
+document.getElementById("home-link").onclick=()=>{ NAV.length=0; go(home); };
+document.getElementById("backbtn").onclick=navBack;
+syncBack();
 document.getElementById("exportlink").onclick=exportProgress;
 document.getElementById("importlink").onclick=()=>document.getElementById("importfile").click();
 document.getElementById("importfile").onchange=e=>{ if(e.target.files[0]) importProgress(e.target.files[0]); };
