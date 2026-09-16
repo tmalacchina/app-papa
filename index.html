@@ -1,0 +1,1145 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>IA au bureau — Renaud</title>
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#0f1726">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="IA au bureau">
+<link rel="apple-touch-icon" href="./apple-touch-icon.png">
+<style>
+:root{
+  --bg:#0f1726; --surface:#1b2740; --surface2:#223052; --txt:#eaf0fb; --muted:#9fb0cc;
+  --line:#2c3c5e; --accent:#37a0e0; --gold:#f0c040; --teal2:#1D9E75; --red:#A32D2D; --amber:#BA7517;
+}
+*{box-sizing:border-box}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:linear-gradient(160deg,#0d1422,#14213a);color:var(--txt);line-height:1.5;margin:0;min-height:100vh}
+.wrap{max-width:880px;margin:0 auto;padding:18px 16px 60px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px;flex-wrap:wrap}
+header h1{font-size:19px;margin:0;font-weight:700;cursor:pointer}
+header h1 small{display:block;font-size:12.5px;color:var(--muted);font-weight:400}
+.stats{display:flex;gap:8px;flex-wrap:wrap}
+.pill{background:var(--surface2);border:1px solid var(--line);border-radius:20px;padding:5px 11px;font-size:12.5px;white-space:nowrap}
+.pill b{color:var(--gold)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:22px;margin-bottom:14px}
+.card h2{margin:0 0 8px;font-size:18px}
+.card h3{margin:18px 0 6px;font-size:15.5px}
+.btn{display:inline-flex;align-items:center;gap:7px;background:var(--accent);color:#fff;border:none;border-radius:11px;padding:11px 18px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;transition:.15s}
+.btn:hover{filter:brightness(1.12)}
+.btn:disabled{opacity:.45;cursor:not-allowed;filter:none}
+.btn.ghost{background:transparent;border:1px solid var(--line);color:var(--txt)}
+.btn.sm{padding:8px 13px;font-size:13px}
+.btn.gold{background:var(--gold);color:#1a1a1a}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:14px}
+.opt{display:block;width:100%;text-align:left;background:var(--surface2);border:1.5px solid transparent;border-radius:12px;padding:14px 16px;margin:9px 0;font-size:14.5px;color:var(--txt);cursor:pointer;font-family:inherit;line-height:1.45}
+.opt:hover{border-color:var(--accent)}
+.opt.correct{background:#16442f;border-color:var(--teal2)}
+.opt.wrong{background:#4a1d1d;border-color:var(--red)}
+.opt.dim{opacity:.55}
+.opt:disabled{cursor:default}
+.expl{background:#11203a;border-left:3px solid var(--accent);border-radius:0 10px 10px 0;padding:12px 14px;margin-top:14px;font-size:13.5px}
+.expl.ok{border-left-color:var(--teal2)}
+.expl.ko{border-left-color:var(--red)}
+.bar{height:8px;background:#0c1322;border-radius:6px;overflow:hidden}
+.bar>i{display:block;height:100%;background:linear-gradient(90deg,var(--teal2),var(--accent));transition:width .5s}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+.mode{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px;cursor:pointer;transition:.18s}
+.mode:hover{transform:translateY(-3px);border-color:var(--accent)}
+.mode .ic{font-size:26px}
+.mode b{display:block;margin-top:6px;font-size:15px}
+.mode span{font-size:13px;color:var(--muted)}
+.lvl{display:flex;align-items:center;gap:14px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px;cursor:pointer}
+.lvl:hover{border-color:var(--accent)}
+.lvl.locked{opacity:.5;cursor:not-allowed}
+.lvl .num{width:38px;height:38px;border-radius:50%;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-weight:700;flex:none}
+.lvl.done .num{background:linear-gradient(135deg,var(--teal2),var(--accent))}
+.lvl .ti{flex:1}
+.lvl .ti small{display:block;color:var(--muted);font-size:12.5px}
+.connector{width:2px;height:14px;background:var(--line);margin-left:34px}
+.lesson p{margin:0 0 12px;font-size:15px}
+.lesson p:last-child{margin-bottom:0}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+.tag{display:inline-block;background:var(--surface2);border-radius:8px;padding:2px 9px;font-size:12px;color:var(--muted);margin-right:6px}
+.tag.done{background:#16442f;color:#8fe0bd}
+textarea{width:100%;min-height:150px;background:#0c1322;color:var(--txt);border:1px solid var(--line);border-radius:12px;padding:12px;font-family:inherit;font-size:14.5px;line-height:1.5;resize:vertical}
+textarea:focus,input:focus{outline:2px solid var(--accent);outline-offset:1px}
+input[type=text],input[type=number],input[type=url]{width:100%;background:#0c1322;color:var(--txt);border:1px solid var(--line);border-radius:10px;padding:11px 12px;font-family:inherit;font-size:14.5px}
+.crit{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--line)}
+.crit:last-child{border-bottom:none}
+.crit .mk{flex:none;width:22px;text-align:center}
+.crit .aide{display:block;color:var(--muted);font-size:13px;margin-top:3px}
+.modele{white-space:pre-wrap;background:#0c1322;border:1px solid var(--line);border-radius:12px;padding:14px;font-size:14px;margin-top:10px}
+.step{display:flex;gap:10px;align-items:center;background:var(--surface2);border-radius:12px;padding:10px 12px;margin:8px 0}
+.step .tx{flex:1;font-size:14.5px}
+.step .ar{display:flex;flex-direction:column;gap:4px}
+.step .ar button{background:transparent;border:1px solid var(--line);color:var(--txt);border-radius:7px;width:30px;height:24px;cursor:pointer;font-size:12px}
+.step.ok{background:#16442f}
+.step.ko{background:#4a1d1d}
+.cls{background:var(--surface2);border-radius:12px;padding:12px;margin:8px 0}
+.cls .tx{font-size:14.5px;margin-bottom:8px}
+.cls .bk{display:flex;gap:6px;flex-wrap:wrap}
+.cls .bk button{background:transparent;border:1px solid var(--line);color:var(--txt);border-radius:9px;padding:7px 11px;cursor:pointer;font-family:inherit;font-size:13px}
+.cls .bk button.sel{border-color:var(--accent);background:#11304a}
+.cls.ok{background:#16442f}
+.cls.ko{background:#4a1d1d}
+.cmp{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px}
+.cmp .rep{background:#0c1322;border:1.5px solid var(--line);border-radius:12px;padding:14px;font-size:14px;cursor:pointer;line-height:1.5}
+.cmp .rep:hover{border-color:var(--accent)}
+.cmp .rep b{display:block;color:var(--muted);font-size:12.5px;margin-bottom:6px}
+.cmp .rep.bad{border-color:var(--red);background:#2a1414}
+.cmp .rep.good{border-color:var(--teal2);background:#12301f}
+.fc{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:34px 22px;text-align:center;min-height:180px;display:flex;flex-direction:column;justify-content:center;cursor:pointer;font-size:17px}
+.fc small{color:var(--muted);font-size:13px;margin-top:10px}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#0c1322;border:1px solid var(--line);color:var(--txt);padding:10px 16px;border-radius:12px;font-size:14px;opacity:0;transition:.25s;pointer-events:none;z-index:9}
+.toast.on{opacity:1}
+.footer-note{margin-top:30px;font-size:12.5px;color:var(--muted);text-align:center}
+.footer-note a{color:var(--accent);cursor:pointer;text-decoration:none}
+.warn{background:#3a2a10;border:1px solid var(--amber);border-radius:12px;padding:10px 14px;font-size:13.5px;margin-bottom:14px}
+.big{font-size:32px;font-weight:700;color:var(--gold)}
+.next{background:#11203a;border:1px dashed var(--line);border-radius:12px;padding:14px;margin-top:14px;font-size:14px}
+.next b{color:var(--gold)}
+@media(max-width:560px){
+  .wrap{padding:12px 12px 50px}
+  .grid{grid-template-columns:1fr}
+  .btn{flex:1 1 auto;justify-content:center}
+  .opt{font-size:15px;padding:13px}
+  .cmp{grid-template-columns:1fr}
+  .card{padding:16px}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1 id="home-link">IA au bureau <small>Parcours de Renaud · 12 séances · 12 missions</small></h1>
+    <div class="stats" id="stats"></div>
+  </header>
+  <div id="app"></div>
+  <div class="footer-note">
+    <span id="syncstatus">☁️ sync non configurée</span> ·
+    <a id="exportlink">exporter</a> · <a id="importlink">importer</a> · <a id="cfglink">synchro</a>
+    <input type="file" id="importfile" accept="application/json" style="display:none">
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+/* ===================== 1. DONNÉES ===================== */
+const APP_NAME = "IA au bureau";
+const USER_NAME = "Renaud";
+
+const CATS = {
+  base:   { name:"Comment ça marche",   icon:"🧠" },
+  prompt: { name:"Bien demander",       icon:"✍️" },
+  data:   { name:"Données et cadre",    icon:"🔒" },
+  mail:   { name:"Mails et agenda",     icon:"📬" },
+  excel:  { name:"Excel et chiffres",   icon:"📊" },
+  vocab:  { name:"Vocabulaire",         icon:"🗣️" }
+};
+
+/* Chaque séance : 30 min. Notion courte → geste dans SON outil → résultat collé et analysé → une chose à faire avant la suivante. */
+const PROG = [
+/* ───────────────────────── SÉANCE 1 ───────────────────────── */
+{ id:"s1", num:1, t:"Ce que c'est, ce que ce n'est pas", icon:"🧠", cat:"base", dur:"30 min",
+  obj:"Comprendre ce qu'une IA fait vraiment quand elle répond — et pourquoi elle peut affirmer une chose fausse avec assurance.",
+  lesson:[
+    "Une IA comme ChatGPT n'a pas « mémorisé toutes les connaissances ». Elle a appris, sur des milliards de textes, à prédire le mot suivant le plus probable. Quand elle répond, elle <b>compose</b> une suite de mots plausible. Le plus souvent c'est juste, parce que le plausible et le vrai coïncident. Parfois non — et rien dans le ton ne le signale.",
+    "Ce phénomène a un nom : <b>l'hallucination</b>. L'IA invente un chiffre, une référence, une règle, un nom de fournisseur, avec exactement la même assurance que lorsqu'elle a raison. Ce n'est pas un bug rare, c'est une propriété du fonctionnement. On ne l'élimine pas, on l'encadre.",
+    "Conséquence directe pour vous : une IA ne « sait » pas votre tarif, votre catalogue, vos conditions clients. Si vous ne lui donnez pas le document, elle complète les trous avec du vraisemblable. Un prix de RFA inventé ressemble exactement à un vrai.",
+    "Deuxième conséquence : l'IA ne se connecte pas toute seule à Business Central, à votre serveur ou à votre boîte mail. Dans ChatGPT tel que vous l'utilisez, elle ne voit que ce que vous collez ou déposez dans la conversation. Les outils qui se branchent sur vos données existent, mais ce sont d'autres produits et d'autres contrats — c'est le chantier de l'entreprise, pas votre usage quotidien.",
+    "La règle qui découle de tout ça, et qui vaut pour les 11 séances suivantes : <b>tout ce qui est vérifiable doit être vérifié</b>. Un chiffre, une date, une règle, un nom. Le reste — le style, la structure, l'idée — on peut le prendre tel quel."
+  ],
+  prac:[
+    { type:"compare", title:"Deux réponses, une inventée",
+      intro:"On a demandé à une IA : « Quel est le taux de RFA habituel accordé à un grossiste en pièces auto en France ? » Voici deux réponses. Laquelle est la plus dangereuse ?",
+      a:"Le taux de RFA (remise de fin d'année) standard dans la distribution de pièces automobiles en France est de 3,5 % pour les grossistes, selon le barème de la FEDA 2024. Il monte à 5 % au-delà de 250 000 € de chiffre d'affaires annuel.",
+      b:"Il n'existe pas de taux « habituel » : les RFA sont négociées contrat par contrat et dépendent du volume, de la catégorie de produits et de l'historique client. Pour connaître les vôtres, il faut vous référer à vos conditions commerciales. Je peux vous aider à structurer une grille si vous me donnez vos paliers.",
+      bad:0,
+      why:"La réponse A cite un barème précis d'une fédération, avec des chiffres et un seuil — c'est ce qui la rend crédible, et c'est exactement le signal d'alerte. Ce barème n'existe pas sous cette forme. L'IA a fabriqué une source parce que la question appelait une réponse chiffrée. La réponse B admet qu'elle ne sait pas et redirige vers vos données : c'est la bonne.",
+      tells:["Un chiffre précis sans document fourni", "Une source nommée que vous ne pouvez pas ouvrir", "Un ton d'autorité sur un sujet propre à votre entreprise"] },
+    { type:"classify", title:"Fiable ou à vérifier ?",
+      intro:"Pour chaque réponse d'IA, dites si vous pouvez la prendre telle quelle ou si elle doit être vérifiée avant usage.",
+      buckets:["Je prends tel quel","Je vérifie d'abord"],
+      items:[
+        {t:"Une reformulation plus polie de votre mail à un grossiste", a:0},
+        {t:"Le montant de la remise que vous avez accordée l'an dernier à un client, alors que vous n'avez fourni aucun fichier", a:1},
+        {t:"Un plan en 5 points pour préparer un salon régional", a:0},
+        {t:"La référence exacte d'une pièce compatible avec un modèle de véhicule", a:1},
+        {t:"Trois idées de mécanique promotionnelle pour septembre", a:0},
+        {t:"La date limite d'une obligation réglementaire", a:1},
+        {t:"Une somme calculée sur un tableau que vous avez déposé, sans que l'IA montre sa méthode", a:1}
+      ] },
+    { type:"scenario", title:"Le réflexe",
+      situation:"Vous demandez à ChatGPT le chiffre d'affaires moyen d'un client trade chez Planet Line. Il répond « environ 42 000 € par an ». Vous n'avez rien déposé.",
+      options:["C'est cohérent avec mon intuition, je le note.","Je lui demande d'où vient ce chiffre.","Je ne peux pas utiliser ce chiffre : il n'a aucune donnée de Planet Line. Je lui donne l'export CA et je redemande."],
+      a:2, e:"Sans données fournies, ce chiffre est une invention plausible. Lui demander « d'où ça vient » produira une justification tout aussi inventée. La seule réponse correcte est de fournir la source." }
+  ],
+  next:"Avant la séance 2 : retrouvez dans ChatGPT une conversation où vous avez obtenu un chiffre ou une règle. Demandez-vous si vous l'aviez vérifiée. Notez la réponse, elle servira.",
+  qids:[0,1,2,3,4,5,6]
+},
+
+/* ───────────────────────── SÉANCE 2 ───────────────────────── */
+{ id:"s2", num:2, t:"Le prompt qui marche", icon:"✍️", cat:"prompt", dur:"30 min",
+  obj:"Passer du prompt « qui marche parfois » au prompt qui marche à chaque fois, en quatre éléments.",
+  lesson:[
+    "Votre meilleur résultat jusqu'ici, ce sont les visuels de présentoir, et vous l'expliquez vous-même : « prompt clair ». Ce qui a marché là par instinct doit devenir une méthode. Un prompt efficace contient quatre choses, dans cet ordre ou un autre, mais toujours les quatre.",
+    "<b>Le rôle</b> : qui doit être l'IA pour répondre. « Tu es un responsable commercial grands comptes dans la distribution de pièces auto. » Ça règle le vocabulaire et le niveau.",
+    "<b>Le contexte</b> : ce que l'IA ne peut pas deviner. Qui est le client, quel est l'enjeu, ce qui s'est déjà passé. C'est la partie que tout le monde oublie et qui fait 80 % de la différence. Collez le mail précédent, décrivez le client, donnez les chiffres.",
+    "<b>Le format</b> : ce que vous voulez recevoir. Un mail de 8 lignes. Un tableau à 3 colonnes. Trois options avec avantages et inconvénients. Sans ça, vous recevez de la prose générique.",
+    "<b>La contrainte</b> : ce qu'il ne faut pas faire. « N'invente aucun chiffre : si une information manque, pose-moi la question. » « Pas de formule de politesse creuse. » « Maximum 120 mots. » La contrainte anti-invention devrait figurer dans presque tous vos prompts professionnels.",
+    "Dernier point : la conversation. Vous discutez déjà en 10 échanges, c'est bien. Mais un prompt complet dès le départ divise ces échanges par trois. Ce n'est pas le nombre de relances qui fait la qualité, c'est la première demande."
+  ],
+  prac:[
+    { type:"order", title:"Reconstituer un bon prompt",
+      intro:"Voici les morceaux d'un prompt pour rédiger une relance à un grossiste silencieux depuis deux mois. Remettez-les dans un ordre logique : rôle, contexte, tâche, format, contrainte.",
+      steps:[
+        "Tu es responsable commercial grands comptes chez un distributeur de pièces auto et moto.",
+        "Contexte : le client est un grossiste qui commandait 8 000 € par mois. Plus aucune commande depuis juillet. Dernier échange : il attendait une réponse sur un délai de livraison, que nous avons donnée. Je colle ci-dessous les deux derniers mails.",
+        "Rédige un mail de reprise de contact.",
+        "Format : 8 lignes maximum, objet inclus, une question ouverte en fin de mail.",
+        "Contrainte : n'invente aucun chiffre ni aucune promesse commerciale. Ton direct, pas de formule creuse."
+      ] },
+    { type:"write", title:"Réécrivez un de vos prompts",
+      intro:"Prenez une vraie demande que vous avez faite récemment (fiche produit, présentoir, recherche salon…) et réécrivez-la avec les quatre éléments. Collez le prompt complet ci-dessous.",
+      criteres:[
+        { label:"Un rôle est donné à l'IA", test:t=>/(tu es|vous etes|agis (en tant que|comme)|en tant que|role ?:)/.test(t), aide:"Commencez par « Tu es … » — un métier, un niveau, un point de vue." },
+        { label:"Du contexte propre à votre situation (client, produit, chiffre, historique)", test:t=>/(client|produit|catalogue|grossiste|fournisseur|salon|promo|planet|tarif|commande|gamme|reference|€|\d{3,})/.test(t) && t.length>180, aide:"Donnez ce que l'IA ne peut pas deviner : qui, quoi, combien, ce qui s'est déjà passé. Plusieurs phrases." },
+        { label:"Un format de sortie précis", test:t=>/(format|tableau|lignes? max|mots max|colonnes|liste|\d+ (points|options|lignes|mots|phrases|idees|propositions)|sous forme de|objet)/.test(t), aide:"Dites ce que vous voulez recevoir : un tableau, 3 options, un mail de 8 lignes…" },
+        { label:"Une contrainte anti-invention ou une interdiction explicite", test:t=>/(n.invente|ne pas inventer|sans inventer|pose.moi (la|une|des) question|si (une information|il te) manque|ne (fais|fait) pas|interdit|pas de |maximum|au plus)/.test(t), aide:"Ajoutez « N'invente aucun chiffre ; si une information manque, pose-moi la question » ou toute autre interdiction utile." }
+      ],
+      modele:"Tu es chef de produit dans la distribution de pièces et accessoires auto/moto, spécialiste des fiches produits e-commerce.\n\nContexte : voici la fiche fournisseur brute d'un kit de plaquettes de frein (collée ci-dessous), destinée à notre site B2B pour des clients grossistes et plateformes. Nos fiches actuelles font 120 à 150 mots, avec un bloc caractéristiques en liste.\n\nTâche : rédige la fiche produit.\n\nFormat : un titre de 60 caractères max, un paragraphe de 80 mots, puis une liste de 5 caractéristiques techniques.\n\nContrainte : n'invente aucune caractéristique technique. Si une information manque dans la fiche fournisseur, écris [À COMPLÉTER] à sa place. Pas de superlatifs (« exceptionnel », « incroyable »).",
+      conseil:"L'erreur classique : décrire la tâche en une ligne et laisser l'IA deviner tout le reste. Le contexte prend de la place. C'est normal." },
+    { type:"scenario", title:"Il manque quelque chose",
+      situation:"Prompt : « Fais-moi un argumentaire pour convaincre un grossiste de référencer notre nouvelle gamme d'ampoules LED. »",
+      options:["Il manque le rôle","Il manque le contexte : quelle gamme, quel prix, quel grossiste, quelle concurrence","Il manque le format","Il manque les trois, mais le contexte est le trou le plus grave"],
+      a:3, e:"Sans contexte, l'IA écrira un argumentaire générique valable pour n'importe quelle LED de n'importe quel distributeur — inutilisable. Rôle et format manquent aussi, mais le contexte est ce qui rend le résultat vôtre." }
+  ],
+  next:"Avant la séance 3 : utilisez ce prompt réécrit pour de vrai dans ChatGPT. Comparez le résultat avec celui que vous aviez obtenu la première fois.",
+  qids:[7,8,9,10,11,12,13]
+},
+
+/* ───────────────────────── SÉANCE 3 ───────────────────────── */
+{ id:"s3", num:3, t:"Ce qui sort, ce qui reste", icon:"🔒", cat:"data", dur:"30 min",
+  obj:"Savoir en une seconde ce que vous pouvez coller dans une IA, ce qu'il faut anonymiser, et ce qui ne sort jamais.",
+  lesson:[
+    "Ce que vous tapez dans ChatGPT part sur les serveurs d'OpenAI. Avec un abonnement individuel, ces conversations peuvent servir à améliorer le modèle, sauf si vous désactivez l'option dans les paramètres (Paramètres → Contrôles des données → « Améliorer le modèle pour tous »). Vérifiez ce réglage aujourd'hui, c'est deux clics. Les offres entreprise (ChatGPT Business, Copilot avec Microsoft 365) s'engagent contractuellement à ne pas entraîner sur vos données — c'est la raison principale de leur existence.",
+    "Planet Line a une charte d'usage de l'IA. Elle dit en substance trois choses. <b>Vert</b> : ce qui peut être collé tel quel — texte public, mails sans données sensibles, questions de méthode, brouillons. <b>Orange</b> : ce qui doit être anonymisé avant — noms de clients, chiffres individuels, conditions négociées. <b>Rouge</b> : ce qui ne sort jamais — tarifs complets, marges, données RH, contrats, accès et mots de passe.",
+    "Anonymiser, concrètement : remplacer « Ets Durand » par « Client A », « 8 000 € par mois » par « un gros volume mensuel », le nom du fournisseur par « notre fournisseur principal ». L'IA travaille aussi bien avec des étiquettes qu'avec des vrais noms. Vous remettez les vrais noms à la fin, dans Word ou Outlook.",
+    "Sur les fichiers déposés : un export CA avec les noms de clients et les montants, c'est orange foncé. Avant de le déposer, une colonne « Client » remplacée par des codes suffit souvent. Nico peut vous sortir l'export déjà codé.",
+    "Le point que Jasper soulèvera : « et si ça fuite ? ». Réponse honnête : avec une offre individuelle, on limite le risque par ce qu'on n'y met pas. Avec une offre entreprise, le risque est contractuellement encadré. La charte existe précisément pour que la réponse ne dépende pas de la bonne volonté de chacun."
+  ],
+  prac:[
+    { type:"classify", title:"Vert, orange, rouge",
+      intro:"Pour chaque élément, décidez : je le colle tel quel, je l'anonymise d'abord, ou ça ne sort jamais.",
+      buckets:["Tel quel","Anonymiser","Jamais"],
+      items:[
+        {t:"Le brouillon d'un mail de relance à un grossiste, sans montant", a:0},
+        {t:"Le fichier Tarif complet, toutes catégories clients", a:2},
+        {t:"L'export CA RFA avec noms de clients et montants", a:1},
+        {t:"Une fiche fournisseur d'un produit public du catalogue", a:0},
+        {t:"La grille de marges par famille de produits", a:2},
+        {t:"Le compte-rendu d'une réunion entre associés sur une embauche", a:2},
+        {t:"« Comment structurer une présentation de stats commerciales ? »", a:0},
+        {t:"Le mail d'un client mécontent, avec son nom et sa commande", a:1},
+        {t:"Les conditions négociées avec une plateforme e-commerce", a:1},
+        {t:"Un identifiant Business Central pour que l'IA « aille voir »", a:2}
+      ] },
+    { type:"write", title:"Anonymisez ce message",
+      intro:"Voici un mail réel (fictif) que vous voulez faire reformuler. Réécrivez-le anonymisé, prêt à coller dans ChatGPT :\n\n« Bonjour M. Lefèvre, suite à notre échange, je vous confirme la remise exceptionnelle de 6 % sur la gamme Bosch pour Auto Pièces Nord, valable jusqu'au 30 novembre, sous réserve d'un minimum de 12 000 € de commande. Cordialement, Renaud »",
+      criteres:[
+        { label:"Le nom du client et de son entreprise ont disparu", test:t=>!/(lefevre|auto pieces nord)/.test(t), aide:"Remplacez « M. Lefèvre » et « Auto Pièces Nord » par « Monsieur X » et « Client A »." },
+        { label:"Le taux de remise n'apparaît plus tel quel", test:t=>!/6 ?%/.test(t), aide:"Un taux négocié est une donnée confidentielle : écrivez « une remise de X % » ou « [TAUX] »." },
+        { label:"Le montant minimum est masqué", test:t=>!/12 ?000/.test(t), aide:"Remplacez le montant par « [MONTANT] » ou « un minimum de commande »." },
+        { label:"Le message reste compréhensible et complet (au moins 3 lignes de sens)", test:t=>t.length>120 && /(remise|gamme|valable|commande)/.test(t), aide:"Anonymiser ne veut pas dire supprimer : gardez la structure et les mots-clés, remplacez seulement les valeurs." }
+      ],
+      modele:"Bonjour Monsieur X, suite à notre échange, je vous confirme la remise exceptionnelle de [TAUX] % sur la gamme [MARQUE] pour [Client A], valable jusqu'au [DATE], sous réserve d'un minimum de [MONTANT] € de commande. Cordialement, Renaud",
+      conseil:"Gardez les crochets : ils rappellent à l'IA qu'il y a une valeur à ne pas inventer, et à vous qu'il y a une valeur à remettre." },
+    { type:"scenario", title:"Le réglage",
+      situation:"Vous ouvrez les paramètres de votre ChatGPT et l'option « Améliorer le modèle pour tous » est activée.",
+      options:["Je laisse, ça améliore mes réponses.","Je la désactive : mes conversations ne serviront plus à l'entraînement.","Ça n'a aucune importance tant que je n'y mets rien de confidentiel."],
+      a:1, e:"Désactivez-la. Ça ne dégrade rien pour vous et ça réduit le risque en cas d'oubli. La troisième réponse est vraie en théorie, mais tout le monde finit par oublier une fois." }
+  ],
+  next:"Avant la séance 4 : allez dans les paramètres de ChatGPT, section Contrôles des données, et vérifiez le réglage d'entraînement. Puis relisez la charte de Planet Line — cinq minutes.",
+  qids:[14,15,16,17,18,19,20]
+},
+
+/* ───────────────────────── SÉANCE 4 ───────────────────────── */
+{ id:"s4", num:4, t:"Mails — trier", icon:"📬", cat:"mail", dur:"30 min",
+  obj:"Réduire le temps passé à décider quoi traiter. Un tri priorisé en 2 minutes chaque matin.",
+  lesson:[
+    "Plus de deux heures par jour pour 20 à 50 mails, c'est 3 à 5 minutes par mail. Le temps ne part pas dans l'écriture, il part dans la <b>décision</b> : lequel est urgent, lequel attend, lequel est du bruit. C'est exactement ce qu'une IA fait bien, à condition de lui donner les mails.",
+    "Le geste, dans Outlook : sélectionnez les mails non lus du matin (clic sur le premier, Maj + clic sur le dernier), Ctrl + C, puis collez dans ChatGPT. Outlook colle expéditeur, objet et début du corps. Ça suffit pour trier.",
+    "Le prompt de tri, à garder dans un fichier texte sur le bureau et à réutiliser chaque jour : rôle (assistant de direction d'un distributeur de pièces auto), contexte (mes priorités : clients trade, grands comptes, associés), tâche (classe ces mails), format (tableau : expéditeur / sujet en 5 mots / catégorie / action en une ligne), contrainte (catégories : Répondre aujourd'hui, Répondre cette semaine, Info seulement, Ignorer — et ne rien inventer sur le contenu).",
+    "Deux précautions. Les mails contenant des chiffres négociés ou des noms sensibles : anonymisez ou n'incluez pas. Et le tri est une <b>proposition</b> : vous restez celui qui décide. L'IA ne sait pas que tel client est stratégique cette semaine — dites-le lui dans le contexte, ou corrigez.",
+    "Si Copilot est activé dans votre Outlook (icône Copilot dans le ruban), le résumé de boîte de réception fait ce travail sans copier-coller, et sans que les mails sortent de Microsoft. C'est l'un des arguments concrets du chantier entreprise. En attendant, le copier-coller marche."
+  ],
+  prac:[
+    { type:"write", title:"Écrivez votre prompt de tri",
+      intro:"Rédigez le prompt que vous collerez chaque matin devant vos mails. Il doit contenir vos vraies priorités.",
+      criteres:[
+        { label:"Un rôle d'assistant est donné", test:t=>/(tu es|assistant|agis)/.test(t), aide:"« Tu es mon assistant de direction chez un distributeur de pièces auto. »" },
+        { label:"Vos priorités sont nommées (clients trade, grands comptes, associés, salons…)", test:t=>/(trade|grand[s]? compte|grossiste|plateforme|associe|salon|priorit)/.test(t), aide:"Dites à l'IA ce qui compte pour vous, sinon elle triera par urgence apparente." },
+        { label:"Les catégories de tri sont fixées", test:t=>/(aujourd.hui|cette semaine|info|ignorer|urgent|categorie)/.test(t) && (t.match(/(aujourd.hui|cette semaine|info|ignorer|urgent)/g)||[]).length>=3, aide:"Imposez 3 ou 4 catégories fixes, par exemple : Répondre aujourd'hui / Cette semaine / Info seulement / Ignorer." },
+        { label:"Un format tableau ou liste avec l'action à faire", test:t=>/(tableau|colonne|liste|action)/.test(t), aide:"Demandez un tableau avec une colonne « action en une ligne » : c'est ce qui vous fait gagner du temps." },
+        { label:"Interdiction d'inventer ou de résumer au-delà du contenu", test:t=>/(n.invente|ne pas inventer|sans inventer|uniquement|seulement|ne rien (ajouter|inventer))/.test(t), aide:"« Ne déduis rien qui ne soit pas dans le mail. »" }
+      ],
+      modele:"Tu es mon assistant de direction chez un distributeur de pièces auto et moto. Mes priorités : les clients trade (grossistes, plateformes), les grands comptes, les demandes de mes associés Jasper et Nicolas, et la préparation des salons régionaux.\n\nVoici mes mails du matin. Classe-les dans un tableau à 4 colonnes : expéditeur / sujet en 5 mots / catégorie / action en une ligne.\n\nCatégories possibles, et seulement celles-ci : Répondre aujourd'hui, Répondre cette semaine, Info seulement, Ignorer.\n\nNe déduis rien qui ne soit pas écrit dans le mail. Si un mail est ambigu, mets-le en « Répondre cette semaine » et dis pourquoi.",
+      conseil:"Enregistrez ce prompt dans un fichier « prompts.txt » sur votre bureau. Vous le collerez tous les jours ; il ne doit jamais être retapé." },
+    { type:"scenario", title:"Le tri est faux",
+      situation:"L'IA a classé le mail d'un grossiste en « Info seulement ». Vous savez que ce grossiste renégocie ses conditions ce mois-ci.",
+      options:["L'IA s'est trompée, l'outil n'est pas fiable.","Je corrige le tri et j'ajoute dans mon prompt : « Le client X est en renégociation, tout mail de sa part est prioritaire ».","Je lui demande pourquoi elle a fait ça."],
+      a:1, e:"L'IA ne pouvait pas savoir. Le tri s'améliore en enrichissant le contexte du prompt, pas en discutant. Une ligne de plus dans prompts.txt et c'est réglé pour le mois." },
+    { type:"calc", title:"Ce que ça vaut",
+      intro:"Vous passez 2 h 15 par jour dans les mails. Si le tri du matin ramène ça à 1 h 30, combien d'heures gagnez-vous sur une semaine de 5 jours ?",
+      question:"Heures gagnées par semaine", answer:3.75, tol:0.05, hint:"2 h 15 − 1 h 30 = 45 min par jour. Multipliez par 5, en heures décimales." }
+  ],
+  next:"Avant la séance 5 : faites le tri du matin trois jours de suite avec votre prompt. Notez chaque jour l'heure à laquelle vous sortez de la boîte mail. Ces trois chiffres sont votre première mesure.",
+  qids:[21,22,23,24,25,26]
+},
+
+/* ───────────────────────── SÉANCE 5 ───────────────────────── */
+{ id:"s5", num:5, t:"Mails — répondre", icon:"📬", cat:"mail", dur:"30 min",
+  obj:"Répondre aux mails de suivi clients deux fois plus vite, avec votre ton, sans retaper le contexte à chaque fois.",
+  lesson:[
+    "Le suivi clients est le mail qui vous coûte le plus. Pas parce qu'il est difficile, parce qu'il est répétitif tout en devant paraître personnel. C'est le cas d'usage idéal, à une condition : que l'IA connaisse votre façon d'écrire et votre contexte <b>une fois pour toutes</b>.",
+    "Pour ça, ChatGPT propose les <b>Projets</b> (menu de gauche, « Nouveau projet »). Un projet, c'est un dossier avec des instructions permanentes et des fichiers joints. Tout ce que vous y écrivez démarre avec ce contexte, sans le recoller. Créez un projet « Mails clients » avec : votre rôle, votre ton (direct, sans formule creuse, vouvoiement), vos règles (jamais de promesse de délai sans validation, jamais de chiffre non fourni), et 3 ou 4 de vos vrais mails que vous trouvez bien écrits, anonymisés, comme exemples de style.",
+    "Ensuite le geste quotidien : ouvrir le projet, coller le mail reçu, écrire « Réponds. Contexte : … » en une ou deux lignes. L'IA produit un brouillon dans votre ton. Vous corrigez, vous envoyez. Vous ne repartez plus jamais d'une page blanche.",
+    "Ce que ça ne fait pas : envoyer à votre place. Ni dans ChatGPT, ni dans Copilot. Vous relisez toujours, vous cliquez toujours. C'est une bonne chose — c'est la réponse à l'objection de Jasper sur les erreurs.",
+    "Un détail qui change tout : les exemples de style. Trois de vos vrais mails valent mieux que dix lignes de description. L'IA imite bien mieux qu'elle ne suit des consignes abstraites."
+  ],
+  prac:[
+    { type:"write", title:"Les instructions de votre projet « Mails clients »",
+      intro:"Rédigez les instructions permanentes du projet. C'est le texte que ChatGPT lira avant chaque mail. Pas d'exemples ici, seulement les règles.",
+      criteres:[
+        { label:"Votre rôle et votre entreprise sont décrits", test:t=>/(responsable|commercial|co.?gerant|directeur|distributeur|pieces|planet)/.test(t), aide:"Qui vous êtes, ce que vend l'entreprise, à qui." },
+        { label:"Le ton est défini avec au moins deux précisions", test:t=>(t.match(/(direct|court|concis|vouvoie|tutoie|chaleureux|sobre|formule|politesse|sans|jamais de|pas de)/g)||[]).length>=2, aide:"Deux ou trois adjectifs et deux interdits : « direct, vouvoiement, pas de formule creuse, jamais de superlatif »." },
+        { label:"Une règle interdit les promesses ou chiffres non fournis", test:t=>/(n.invente|jamais (de|un|une)? ?(chiffre|promesse|delai|prix|engagement)|sans (que je|validation)|ne (promet|t.engage)|si (je n.ai pas|une info)|pose.moi)/.test(t), aide:"« Ne promets jamais un délai, un prix ou une remise que je n'ai pas écrits. Si tu en as besoin, mets [À VALIDER]. »" },
+        { label:"Le format de sortie est fixé", test:t=>/(lignes|mots|objet|paragraphe|format|court|longueur)/.test(t), aide:"« Réponse en 6 à 10 lignes, objet proposé, pas de pièce jointe mentionnée sauf si je le dis. »" },
+        { label:"Vous précisez que vous relisez et envoyez vous-même", test:t=>/(brouillon|je relis|je valide|proposition|je corrige|avant envoi)/.test(t), aide:"« Tu produis un brouillon que je relis et que j'envoie moi-même. »" }
+      ],
+      modele:"Tu m'aides à répondre aux mails de mes clients. Je suis co-gérant, responsable commercial trade (grossistes et plateformes) chez un distributeur de pièces et accessoires auto/moto.\n\nTon : direct, vouvoiement, phrases courtes, pas de formule de politesse creuse, jamais de superlatif. On va au point dès la première phrase.\n\nRègles : ne promets jamais un délai, un prix, une remise ou une disponibilité que je n'ai pas écrits dans ma demande. Si tu en as besoin pour répondre, écris [À VALIDER] à la place. Ne réponds qu'à ce qui est demandé dans le mail.\n\nFormat : 6 à 10 lignes, objet proposé en première ligne, une seule question en fin de mail si nécessaire.\n\nTu produis un brouillon. Je relis, je corrige, j'envoie moi-même.",
+      conseil:"Les gens écrivent des instructions trop polies. L'IA n'a pas besoin de « merci de bien vouloir ». Des règles sèches donnent de meilleurs mails." },
+    { type:"scenario", title:"Le brouillon promet",
+      situation:"Le brouillon généré dit : « Nous vous livrerons sous 48 h ». Vous n'avez rien écrit sur le délai.",
+      options:["Je laisse, 48 h c'est notre délai habituel.","Je supprime la phrase, et j'ajoute la règle anti-promesse dans les instructions du projet si elle n'y est pas.","Je demande à l'IA de confirmer le délai."],
+      a:1, e:"Le délai « habituel » est justement ce que l'IA a inventé à partir du vraisemblable. Demander confirmation à l'IA n'a aucun sens : elle ne sait rien de votre logistique. On corrige, et on rend la règle permanente." },
+    { type:"classify", title:"Exemple de style ou pas ?",
+      intro:"Vous choisissez les mails à joindre au projet comme exemples de votre style. Lesquels conviennent ?",
+      buckets:["Bon exemple","À exclure"],
+      items:[
+        {t:"Une réponse courte et nette à un grossiste sur une disponibilité, anonymisée", a:0},
+        {t:"Un mail de négociation avec le détail des remises accordées", a:1},
+        {t:"Un mail de relance que vous trouvez bien tourné", a:0},
+        {t:"Un mail écrit sous le coup de l'agacement", a:1},
+        {t:"Un mail d'invitation à un salon régional", a:0},
+        {t:"Un échange interne avec Jasper sur un salarié", a:1}
+      ] }
+  ],
+  next:"Avant la séance 6 : créez le projet « Mails clients » dans ChatGPT avec vos instructions et 3 mails anonymisés. Répondez à 5 mails de suivi avec. Chronométrez le cinquième.",
+  qids:[27,28,29,30,31]
+},
+
+/* ───────────────────────── SÉANCE 6 ───────────────────────── */
+{ id:"s6", num:6, t:"Agenda et décisions", icon:"📅", cat:"mail", dur:"30 min",
+  obj:"Ne plus rien perdre entre une réunion et l'action. Dicter, structurer, retrouver.",
+  lesson:[
+    "Agenda papier, décisions notées « chacun pour soi », règle de prix nulle part écrite. Rien de tout ça n'est un problème d'IA — c'est un problème de mémoire d'entreprise. Mais l'IA supprime la corvée qui empêchait de le régler : la mise au propre.",
+    "Le geste après une réunion entre associés ou avec un commercial : ouvrez ChatGPT sur votre iPhone, appuyez sur le micro, et racontez pendant deux minutes ce qui s'est dit, en vrac. Puis : « Structure ça en trois blocs : décisions prises, actions avec responsable et date, points ouverts. Ne rajoute rien que je n'ai pas dit. » Vous obtenez un compte-rendu propre en trente secondes, que vous collez dans un mail aux deux autres ou dans un fichier « Décisions » sur le serveur.",
+    "Ce que ça change : dans six mois, « qui a décidé quoi » est retrouvable. Et Jasper, qui redoute les erreurs, aura sous les yeux un usage de l'IA où il n'y a rien à inventer — elle ne fait que ranger vos propres mots.",
+    "L'agenda : passer du papier à Outlook n'est pas obligatoire, mais tant que l'agenda est sur papier, aucun outil ne peut vous rappeler une relance, vous proposer un créneau, ou vous signaler un salon qui approche. Copilot dans Outlook ne peut lire que ce qui est dans Outlook. Un compromis : garder le papier pour la journée, mais mettre dans Outlook les échéances à plus d'une semaine — salons, fins de promo, relances grands comptes.",
+    "La règle de prix : c'est le premier document à écrire avec cette méthode. Dictez-la. Faites-la structurer. Relisez-la avec Jasper et Nico. En une heure, une chose qui n'existait que dans trois têtes existe sur le serveur."
+  ],
+  prac:[
+    { type:"write", title:"Du vrac au compte-rendu",
+      intro:"Voici une dictée brute après une réunion. Rédigez le compte-rendu structuré vous-même (ou générez-le dans ChatGPT et collez le résultat) :\n\n« Bon alors on a parlé du salon de Lyon, Jasper dit qu'on y va mais budget plafonné à 4 000, moi je gère le stand, faut que je réserve avant fin du mois. Nico a dit que les stats commerciaux il les sort le 5 de chaque mois maintenant, plus le 10. On n'a pas tranché pour la promo d'octobre, Jasper veut attendre les retours fournisseurs. Et il faut qu'on écrive la règle de prix un jour, tout le monde est d'accord, personne ne s'en occupe. »",
+      criteres:[
+        { label:"Un bloc « Décisions »", test:t=>/decision/.test(t), aide:"Un titre « Décisions » suivi des points tranchés." },
+        { label:"Un bloc « Actions » avec responsable et date", test:t=>/action/.test(t) && /(renaud|jasper|nico)/.test(t) && /(fin du mois|le 5|\d{1,2}\/\d{1,2}|avant|octobre)/.test(t), aide:"Chaque action a un nom et une échéance : « Renaud — réserver le stand — avant fin du mois »." },
+        { label:"Un bloc « Points ouverts »", test:t=>/(ouvert|non tranch|en attente|a trancher)/.test(t), aide:"Ce qui n'a pas été décidé va dans un bloc à part, pour ne pas être confondu avec une décision." },
+        { label:"Le budget du salon et la nouvelle date des stats y figurent", test:t=>/4 ?000/.test(t) && /le 5/.test(t), aide:"Vérifiez : 4 000 € plafond, stats le 5 du mois. Ce sont les chiffres qui comptent." },
+        { label:"La règle de prix apparaît comme action ou point ouvert, pas comme décision faite", test:t=>{ const i=t.indexOf("regle de prix"), d=t.indexOf("decision"), a=Math.min(...[t.indexOf("action"),t.indexOf("ouvert")].filter(x=>x>=0)); return i>=0 && (d<0 || a>=0 && i>a); }, aide:"« Tout le monde est d'accord, personne ne s'en occupe » = action sans responsable. Notez-le ainsi." }
+      ],
+      modele:"Décisions\n- Participation au salon de Lyon confirmée, budget plafonné à 4 000 €.\n- Les stats commerciaux sont désormais sorties le 5 de chaque mois (et non plus le 10).\n\nActions\n- Renaud — réserver le stand de Lyon — avant fin du mois.\n- Nico — sortie des stats commerciaux — le 5 de chaque mois.\n\nPoints ouverts\n- Promo d'octobre : non tranchée, Jasper attend les retours fournisseurs.\n- Règle de prix à formaliser par écrit : accord de principe, aucun responsable désigné.",
+      conseil:"Le piège : transformer « on est d'accord qu'il faudrait » en décision. Une décision a un responsable et une date. Le reste est un point ouvert." },
+    { type:"order", title:"Le circuit d'une décision",
+      intro:"Remettez dans l'ordre les étapes pour qu'une décision prise à l'oral ne se perde plus.",
+      steps:["La réunion se termine","Dicter au téléphone ce qui s'est dit, en vrac, dans les 10 minutes","Demander à l'IA de structurer en décisions / actions / points ouverts, sans rien ajouter","Relire et corriger — l'IA a pu mal comprendre un nom ou un chiffre","Envoyer aux associés et enregistrer dans le fichier Décisions sur le serveur","Reporter les actions datées dans Outlook"] },
+    { type:"scenario", title:"Copilot et l'agenda papier",
+      situation:"On vous annonce que Copilot pourra bientôt lire votre agenda et vous préparer votre semaine. Votre agenda est sur papier.",
+      options:["Ça marchera quand même, Copilot est intelligent.","Ça ne marchera pas : Copilot ne voit que ce qui est dans Outlook. Il faut d'abord y mettre les échéances.","Je passe tout dans Outlook dès demain."],
+      a:1, e:"Aucune IA ne lit votre carnet. La bascule complète n'est pas obligatoire du jour au lendemain, mais rien n'est possible tant que les échéances ne sont pas dans Outlook." }
+  ],
+  next:"Avant la séance 7 : dictez la règle de prix, telle que vous la connaissez. Faites-la structurer. Envoyez-la à Jasper et Nico pour relecture. Et demandez à Nico l'export CA RFA de l'année, avec une colonne client codée.",
+  qids:[32,33,34,35]
+}
+];
+PROG.push(
+/* ───────────────────────── SÉANCE 7 ───────────────────────── */
+{ id:"s7", num:7, t:"Excel — les formules", icon:"📊", cat:"excel", dur:"30 min",
+  obj:"Obtenir une formule SI ou un tableau croisé sans les connaître, et savoir si le résultat est juste.",
+  lesson:[
+    "Vous maîtrisez tri, filtres, RECHERCHEV, doublons. Ce qui vous manque — SI, tableaux croisés, liaisons — n'a plus besoin d'être appris par cœur. Il faut savoir le <b>demander</b> et le <b>contrôler</b>.",
+    "Le geste : décrivez votre tableau à l'IA en donnant les en-têtes exacts et deux lignes d'exemple, puis ce que vous voulez obtenir. « Colonne A : référence. Colonne B : prix tarif. Colonne C : catégorie client (T1, T2, T3). Je veux en D le prix remisé : −5 % pour T1, −8 % pour T2, −12 % pour T3. Donne-moi la formule pour D2, en français, pour Excel. » Vous obtenez une formule SI imbriquée que vous collez. Précisez toujours « en français » : les noms de fonctions changent selon la langue d'Excel, et une formule anglaise ne marchera pas chez vous.",
+    "Le contrôle : avant de tirer la formule sur 300 lignes, vérifiez-la <b>sur une ligne à la main</b>. Un prix T2 à 100 € doit donner 92. Si oui, tirez. Si non, collez la formule et l'erreur à l'IA : « Ça donne 95 au lieu de 92, corrige. » Trois échanges maximum. Au-delà, votre description du tableau était floue : reprenez-la.",
+    "Pour un tableau croisé dynamique, ne demandez pas « fais-moi un TCD » — l'IA ne touche pas à votre fichier. Demandez « explique-moi en 5 étapes, pour Excel, comment obtenir le total de CA par client et par mois à partir de ce tableau ». Vous suivez les étapes. La deuxième fois, vous n'aurez plus besoin de demander.",
+    "Vous pouvez aussi déposer le fichier lui-même (anonymisé si besoin) et demander « ajoute une colonne D avec le prix remisé selon ces règles et rends-moi le fichier ». ChatGPT écrit alors un petit programme, l'exécute et vous rend un Excel. Quand il passe par un programme, le calcul est fiable. Quand il « calcule » dans sa réponse en texte, il peut se tromper. Regardez s'il affiche une étape « Analyse » ou du code : c'est le signe qu'il a réellement calculé."
+  ],
+  prac:[
+    { type:"write", title:"Demandez la formule promo",
+      intro:"Votre fichier Promo a les colonnes : A = Référence, B = Prix tarif, C = Catégorie client (T1/T2/T3), D = En promo (oui/non). Vous voulez en E le prix final : remise catégorie (T1 −5 %, T2 −8 %, T3 −12 %), plus 10 % supplémentaires si D = oui. Rédigez la demande à l'IA.",
+      criteres:[
+        { label:"Les colonnes sont décrites avec leur lettre et leur contenu", test:t=>/colonne a|a ?[:=]|en a/.test(t) && /(colonne e|en e|e ?[:=])/.test(t), aide:"« Colonne A : référence, B : prix tarif… je veux en E … ». L'IA doit pouvoir écrire =E2 sans deviner." },
+        { label:"Les trois taux de remise sont donnés", test:t=>/5 ?%/.test(t) && /8 ?%/.test(t) && /12 ?%/.test(t), aide:"Les trois taux, avec la catégorie correspondante." },
+        { label:"La remise promo supplémentaire de 10 % et sa condition sont précisées", test:t=>/10 ?%/.test(t) && /(oui|promo|d ?=|si d)/.test(t), aide:"« Et si D = oui, 10 % de plus. » Sinon l'IA ignorera la colonne D." },
+        { label:"Vous demandez la formule pour une cellule précise, en français, pour Excel", test:t=>/(e2|cellule)/.test(t) && /francais/.test(t), aide:"« Donne-moi la formule pour E2, en français, pour Excel. » Sans « en français », vous risquez IF au lieu de SI." },
+        { label:"Vous précisez si la remise promo se cumule ou s'ajoute", test:t=>/(cumul|successi|s.ajoute|apres la remise|sur le prix (remise|deja)|additionn)/.test(t), aide:"−8 % puis −10 % ne donne pas −18 %. Dites lequel vous voulez, sinon l'IA choisira pour vous." }
+      ],
+      modele:"Dans Excel en français. Mon tableau : colonne A = Référence, B = Prix tarif, C = Catégorie client (T1, T2 ou T3), D = En promo (oui ou non).\n\nJe veux en E le prix final : remise selon la catégorie (T1 : −5 %, T2 : −8 %, T3 : −12 %), puis, si D = oui, 10 % de remise supplémentaire appliquée sur le prix déjà remisé (remises successives, pas additionnées).\n\nDonne-moi la formule pour la cellule E2, en français, et un exemple de calcul pour un prix tarif de 100 € en T2 avec promo.",
+      conseil:"Demander l'exemple chiffré avec la formule vous donne immédiatement de quoi la contrôler à la main." },
+    { type:"calc", title:"Contrôlez à la main",
+      intro:"Prix tarif 100 €, catégorie T2 (−8 %), en promo (−10 % supplémentaires, remises successives).",
+      question:"Prix final en euros", answer:82.8, tol:0.01, hint:"100 × 0,92 = 92, puis 92 × 0,90. Ce n'est pas 100 − 18." },
+    { type:"scenario", title:"Le résultat est faux",
+      situation:"Vous collez la formule. Pour une ligne T3 à 200 € sans promo, elle donne 184 au lieu de 176.",
+      options:["Je fais confiance à la formule, j'ai dû me tromper.","Je colle à l'IA : « pour T3 à 200 € sans promo, ta formule donne 184, attendu 176. Corrige. »","Je refais tout à la main."],
+      a:1, e:"184 = −8 %, donc la formule a confondu T2 et T3. Donner à l'IA le cas précis, le résultat obtenu et le résultat attendu la fait corriger en un échange. C'est le contrôle sur une ligne qui a permis de le voir." }
+  ],
+  next:"Avant la séance 8 : appliquez la formule dans votre vrai fichier Promo, contrôlez trois lignes à la main. Et vérifiez que vous avez reçu l'export CA de Nico.",
+  qids:[36,37,38,39,40]
+},
+
+/* ───────────────────────── SÉANCE 8 ───────────────────────── */
+{ id:"s8", num:8, t:"Excel — analyser", icon:"📊", cat:"excel", dur:"30 min",
+  obj:"Répondre à « quel client a baissé ? » à partir de l'export CA, en exigeant la méthode et en contrôlant un chiffre.",
+  lesson:[
+    "Votre question sans réponse : « quel client a vendu quoi, quels résultats en détail ». Nico sort les stats, vous les recevez, vous les classez à la main, vous les présentez. Chaque étape sauf la première peut être déléguée à l'IA — à condition d'exiger deux choses : la <b>méthode</b> et un <b>chiffre contrôlable</b>.",
+    "Le geste : déposez l'export CA (colonne client codée) dans ChatGPT. Prompt : « Voici le CA mensuel par client sur 12 mois. Liste les 10 clients dont le CA des 3 derniers mois a le plus baissé par rapport aux 3 mois précédents, en euros et en pourcentage. Montre-moi ta méthode de calcul avant le tableau. » L'IA lance une analyse — vous verrez apparaître du code ou une étape « Analyse ». C'est le bon signe : elle calcule vraiment, elle n'estime pas.",
+    "Le contrôle : prenez le premier client de la liste et refaites le calcul à la main dans Excel — deux sommes et une soustraction. Si ça colle, le reste colle. Si ça ne colle pas, l'IA a mal lu une colonne (mois en texte, montants avec espaces) : dites-lui exactement ce qui diffère.",
+    "Le piège classique : l'IA qui « analyse » sans calculer. Si elle répond en trois secondes avec un tableau sans avoir affiché d'étape d'analyse, méfiance — elle a peut-être lu les premières lignes et extrapolé. Demandez « as-tu calculé sur l'ensemble du fichier ou estimé ? ». Elle répond honnêtement à cette question directe.",
+    "La suite logique : « Fais-moi trois graphiques : évolution du CA total, top 10 clients, clients en baisse. » Puis « Rédige 5 lignes de commentaire pour une réunion commerciale, sans jugement sur les personnes. » Vous arrivez à la réunion avec les stats classées, commentées, et vous avez passé vingt minutes au lieu de deux heures. Nico sort les données, vous les faites parler."
+  ],
+  prac:[
+    { type:"write", title:"Le prompt d'analyse",
+      intro:"Rédigez la demande que vous ferez avec l'export CA déposé. Elle doit imposer la méthode et un format présentable.",
+      criteres:[
+        { label:"Le fichier est décrit (ce qu'il contient, période, colonnes)", test:t=>/(colonne|mois|ca |chiffre d.affaires|client)/.test(t) && /(12 mois|annee|mensuel|periode|janvier|\d{4})/.test(t), aide:"« Colonnes : code client, mois, CA en euros. Période : 12 derniers mois. »" },
+        { label:"La question est précise (quoi comparer à quoi)", test:t=>/(baiss|hauss|evolu|compar|variation|par rapport)/.test(t) && /(mois|trimestre|periode)/.test(t), aide:"« Les 3 derniers mois comparés aux 3 précédents » — pas « analyse ça »." },
+        { label:"Vous exigez la méthode de calcul", test:t=>/(methode|comment tu (as|calcules)|explique (ton|le) calcul|montre.*calcul|etapes? de calcul)/.test(t), aide:"« Montre-moi ta méthode avant le tableau. »" },
+        { label:"Vous demandez si le calcul porte sur tout le fichier", test:t=>/(ensemble du fichier|toutes les lignes|tout le fichier|integralite|sur l.ensemble|pas (d.)?estim)/.test(t), aide:"« Calcule sur l'ensemble du fichier, n'estime pas. »" },
+        { label:"Un format de sortie présentable est fixé", test:t=>/(tableau|graphique|colonnes|top ?\d+|\d+ (clients|lignes))/.test(t), aide:"« Tableau : client / CA avant / CA après / écart € / écart % », ou un graphique." }
+      ],
+      modele:"Voici l'export du chiffre d'affaires mensuel par client sur les 12 derniers mois. Colonnes : code client, mois, CA en euros.\n\nCalcule, pour chaque client, le CA des 3 derniers mois et celui des 3 mois précédents. Liste les 10 clients dont la baisse est la plus forte, en euros et en pourcentage.\n\nMontre-moi ta méthode de calcul avant le tableau. Calcule sur l'ensemble du fichier, n'estime rien.\n\nFormat : tableau à 5 colonnes — client / CA 3 mois précédents / CA 3 derniers mois / écart en € / écart en %. Puis un graphique en barres des 10 écarts.",
+      conseil:"« Montre ta méthode » force l'IA à passer par un vrai calcul. Sans ça, elle peut produire un tableau plausible en lisant vingt lignes." },
+    { type:"calc", title:"Le contrôle à la main",
+      intro:"Client A. CA des mois 7-8-9 : 3 200, 2 900, 3 100 €. CA des mois 10-11-12 : 2 100, 1 800, 1 900 €. L'IA annonce une baisse de 37 %. Est-ce juste ?",
+      question:"Baisse en pourcentage (arrondie à l'entier, sans le signe)", answer:37, tol:0.6, hint:"Avant : 9 200. Après : 5 800. Écart : 3 400. Divisez par 9 200." },
+    { type:"compare", title:"Calculé ou estimé ?",
+      intro:"Deux réponses à la même demande d'analyse sur un fichier de 400 lignes. Laquelle est fiable ?",
+      a:"Voici les 10 clients en plus forte baisse : C014 (−41 %), C087 (−38 %), C023 (−35 %), C102 (−31 %), C056 (−29 %), C009 (−27 %), C131 (−24 %), C044 (−22 %), C077 (−20 %), C118 (−19 %). Souhaitez-vous un graphique ?",
+      b:"Méthode : j'ai chargé les 400 lignes, regroupé par client, sommé les mois 7 à 9 et 10 à 12, calculé l'écart. 3 lignes avaient un montant vide, exclues. Résultat : [tableau de 10 lignes avec CA avant / après / écart € / écart %]. Voulez-vous que j'inclue les 3 lignes exclues ?",
+      bad:0,
+      why:"La réponse A donne des pourcentages sans montants ni méthode, et arrive trop vite : rien ne prouve qu'elle a lu les 400 lignes. La réponse B décrit ce qu'elle a fait, signale les lignes exclues, donne des montants contrôlables. Ce n'est pas la quantité de chiffres qui rend une réponse fiable, c'est la présence d'une méthode et d'un moyen de la vérifier.",
+      tells:["Des pourcentages sans montants derrière","Aucune mention de la méthode ni des lignes traitées","Une réponse instantanée sur un gros fichier"] }
+  ],
+  next:"Avant la séance 9 : faites l'analyse sur le vrai export. Contrôlez le premier client à la main. Si les chiffres tiennent, vous avez la base de votre prochaine présentation commerciaux.",
+  qids:[41,42,43,44]
+},
+
+/* ───────────────────────── SÉANCE 9 ───────────────────────── */
+{ id:"s9", num:9, t:"La promo de A à Z", icon:"🏷️", cat:"excel", dur:"30 min",
+  obj:"Construire une promotion complète — mécanique, calcul, texte, visuel — en une séance, avec l'IA à chaque étape.",
+  lesson:[
+    "C'est votre objectif à trois mois. Une promo, c'est quatre morceaux que vous faites aujourd'hui séparément et à la main : la mécanique, le calcul, le texte d'annonce, le visuel. L'IA intervient sur les quatre, différemment.",
+    "<b>La mécanique</b> : brainstorming. « Tu es responsable marketing dans la distribution auto/moto. Gamme : plaquettes de frein, cible : grossistes, période : octobre, objectif : écouler un surstock de 3 000 unités. Propose 5 mécaniques promotionnelles différentes, avec pour chacune l'avantage, le risque et l'effet sur la marge. » Vous choisissez. Ici, pas de vérification nécessaire : ce sont des idées, vous êtes le juge.",
+    "<b>Le calcul</b> : c'est la séance 7. Vous avez la formule. Vous connaissez le contrôle sur une ligne. Ajoutez une chose : demandez à l'IA de simuler. « Si 40 % des grossistes prennent l'offre à 12 000 € minimum, quel volume et quel CA ? » Elle calcule, vous vérifiez un cas.",
+    "<b>Le texte</b> : projet « Mails clients », séance 5. « Rédige l'annonce de cette promo pour un mailing aux grossistes, 120 mots, mécanique et dates incluses, sans superlatif. » Puis « Une version courte pour WhatsApp, 3 lignes. » Le style est le vôtre, les chiffres sont ceux que vous avez donnés — vérifiez qu'elle n'en a pas ajouté.",
+    "<b>Le visuel</b> : vous savez déjà faire, c'est votre meilleur succès. Une précision : le visuel généré ne sait pas écrire correctement un prix ou une référence — il déforme le texte. Générez le fond et le présentoir, ajoutez le texte vous-même dans PowerPoint ou Canva. Et ne demandez jamais de logo de marque fournisseur dans un visuel généré : c'est un problème de droits, pas un problème d'IA."
+  ],
+  prac:[
+    { type:"order", title:"L'enchaînement",
+      intro:"Remettez dans l'ordre les étapes de construction d'une promo avec l'IA.",
+      steps:["Décrire à l'IA la gamme, la cible, la période, l'objectif","Obtenir 5 mécaniques, en choisir une","Demander la formule de calcul et la contrôler sur une ligne","Faire simuler le volume et le CA selon un taux de prise","Rédiger le texte d'annonce dans le projet Mails clients","Générer le fond visuel, ajouter le texte soi-même","Faire relire par Stéphane avant diffusion"] },
+    { type:"write", title:"Le brief de la promo",
+      intro:"Rédigez le premier prompt : celui qui demande les mécaniques. Il doit contenir tout ce qu'un responsable marketing aurait besoin de savoir.",
+      criteres:[
+        { label:"Rôle donné", test:t=>/(tu es|responsable|marketing|chef de produit)/.test(t), aide:"« Tu es responsable marketing dans la distribution de pièces auto/moto. »" },
+        { label:"Gamme ou produit, cible et période sont précisés", test:t=>/(gamme|produit|reference|plaquette|filtre|ampoule|huile|batterie)/.test(t) && /(grossiste|trade|plateforme|retail|garag|cible)/.test(t) && /(octobre|novembre|decembre|septembre|semaine|mois|periode|du \d)/.test(t), aide:"Quoi, à qui, quand. Les trois." },
+        { label:"L'objectif chiffré est donné (stock à écouler, CA visé, marge mini)", test:t=>/\d{3,}/.test(t) && /(stock|ecouler|objectif|marge|volume|ca |chiffre)/.test(t), aide:"« Écouler 3 000 unités » ou « marge minimum 18 % » — sans objectif, les mécaniques proposées seront hors sujet." },
+        { label:"Le nombre de propositions et leur structure sont fixés", test:t=>/\d+ (mecanique|proposition|option|idee)/.test(t) && /(avantage|risque|marge|inconvenient)/.test(t), aide:"« 5 mécaniques, avec pour chacune avantage, risque, effet sur la marge. »" },
+        { label:"Une contrainte métier ou une interdiction", test:t=>/(pas de|sans|jamais|interdit|maximum|ne (propose|pas))/.test(t), aide:"« Pas de mécanique qui dévalorise la marque », « pas de remise au-delà de 15 % », « rien qui nécessite un développement informatique »." }
+      ],
+      modele:"Tu es responsable marketing dans la distribution de pièces et accessoires auto/moto, en B2B.\n\nGamme : plaquettes de frein, référence premium. Cible : nos clients grossistes. Période : tout le mois d'octobre. Objectif : écouler un surstock de 3 000 unités en préservant une marge minimum de 18 %.\n\nPropose 5 mécaniques promotionnelles différentes (pas seulement des remises). Pour chacune : le principe en 2 lignes, l'avantage principal, le risque principal, l'effet estimé sur la marge.\n\nContraintes : pas de remise supérieure à 15 %, rien qui demande un développement sur notre site, pas de mécanique déjà vue chez nous (offre « 10 achetées, 1 offerte »).",
+      conseil:"Précisez « pas seulement des remises ». Sinon vous recevez cinq variantes du même pourcentage." },
+    { type:"scenario", title:"Le visuel avec le prix",
+      situation:"Vous générez un visuel de présentoir avec le texte « −12 % sur les plaquettes ». Le résultat affiche « −12 % sur les plaqetes ».",
+      options:["Je régénère jusqu'à ce que ce soit correct.","C'est normal : les IA d'images déforment le texte. Je génère le visuel sans texte et j'ajoute le texte dans PowerPoint.","Je change de mot pour que ça passe."],
+      a:1, e:"Les générateurs d'images ne savent pas écrire de manière fiable. Régénérer vingt fois est une perte de temps ; le texte s'ajoute après, dans un outil qui écrit juste." }
+  ],
+  next:"Avant la séance 10 : construisez une vraie promo pour un produit réel, de la mécanique au visuel. Faites-la relire par Stéphane. Notez le temps total.",
+  qids:[45,46,47]
+},
+
+/* ───────────────────────── SÉANCE 10 ───────────────────────── */
+{ id:"s10", num:10, t:"Offres et relances", icon:"📄", cat:"prompt", dur:"30 min",
+  obj:"Produire une offre grand compte ou une relance en dix minutes, sans qu'un chiffre y soit inventé.",
+  lesson:[
+    "Rédiger des offres et des devis vous coûte du temps. Le schéma est le même que pour les mails, avec un niveau d'exigence supérieur : une offre contient des chiffres, des conditions, des dates. Chaque élément de ce type doit venir de <b>vous</b>, jamais de l'IA.",
+    "La méthode qui marche : donner à l'IA la <b>trame</b> et les <b>données</b> séparément. La trame : « Une offre commerciale pour un grossiste, structure en 5 parties : contexte, proposition, conditions, calendrier, prochaine étape. » Les données : une liste sèche de ce que vous avez décidé — produits, remise, minimum, validité, délai. L'IA assemble. Elle ne décide rien.",
+    "La contrainte à mettre à chaque fois : « Utilise uniquement les chiffres et conditions de ma liste. Si tu as besoin d'une information que je n'ai pas donnée, écris [À COMPLÉTER] à sa place. » Vous saurez d'un coup d'œil ce qu'il vous reste à décider.",
+    "La relance : plus court, plus délicat. Le ton compte plus que le contenu. Donnez l'historique — « troisième relance, la première offre date d'il y a un mois, ils avaient dit qu'ils reviendraient vers nous » — et demandez trois versions : neutre, plus pressante, avec une porte de sortie. Vous choisissez celle qui correspond au client. Trois versions coûtent le même prix qu'une.",
+    "Dernier contrôle, toujours le même : relisez chaque chiffre de l'offre générée et pointez-le sur votre liste. Un chiffre qui n'est pas dans votre liste a été inventé, même s'il semble cohérent."
+  ],
+  prac:[
+    { type:"write", title:"L'offre grand compte",
+      intro:"Rédigez le prompt complet pour une offre à un grossiste. Vos données : gamme filtres à huile, remise 7 %, minimum 15 000 € HT sur le trimestre, validité jusqu'au 31 décembre, livraison franco à partir de 800 €, RFA selon conditions en vigueur.",
+      criteres:[
+        { label:"La trame de l'offre est décrite (parties ou structure)", test:t=>/(partie|structure|section|contexte|proposition|condition|calendrier|prochaine etape|plan)/.test(t), aide:"Donnez les parties attendues : contexte, proposition, conditions, calendrier, prochaine étape." },
+        { label:"Les données sont fournies sous forme de liste séparée", test:t=>/7 ?%/.test(t) && /15 ?000/.test(t) && /31 decembre/.test(t) && /800/.test(t), aide:"Listez chaque donnée : remise, minimum, validité, franco. Séparées de la trame." },
+        { label:"Interdiction d'utiliser d'autres chiffres que les vôtres", test:t=>/(uniquement|seulement|exclusivement|aucun autre chiffre|n.invente|ne (rajoute|ajoute) (pas|aucun))/.test(t), aide:"« Utilise uniquement les chiffres de ma liste. »" },
+        { label:"Marqueur [À COMPLÉTER] pour les manques", test:t=>/(a completer|a valider|\[.*\]|xxx)/.test(t), aide:"« Si une information manque, écris [À COMPLÉTER]. »" },
+        { label:"Format et longueur fixés", test:t=>/(mots|lignes|page|format|paragraphe|court|maximum)/.test(t), aide:"« Une page maximum, 250 mots, titres de parties visibles. »" }
+      ],
+      modele:"Tu m'aides à rédiger une offre commerciale pour un client grossiste (Client A). Je suis co-gérant, responsable commercial trade chez un distributeur de pièces auto/moto.\n\nStructure en 5 parties, titres visibles : 1. Contexte de notre relation, 2. Proposition, 3. Conditions, 4. Calendrier, 5. Prochaine étape.\n\nDonnées, à utiliser exclusivement :\n- Gamme : filtres à huile\n- Remise : 7 %\n- Minimum de commande : 15 000 € HT sur le trimestre\n- Validité : jusqu'au 31 décembre\n- Livraison franco à partir de 800 € HT\n- RFA : selon conditions en vigueur\n\nN'utilise aucun autre chiffre ni aucune autre condition. Si tu as besoin d'une information absente de cette liste, écris [À COMPLÉTER] à sa place.\n\nFormat : une page maximum, environ 250 mots, ton direct, vouvoiement.",
+      conseil:"La liste de données à part est ce qui rend l'offre vérifiable en 30 secondes : chaque chiffre du texte doit être dans la liste." },
+    { type:"classify", title:"Inventé ou fourni ?",
+      intro:"Voici des phrases extraites d'une offre générée à partir de la liste ci-dessus. Lesquelles contiennent un élément qui n'était pas dans vos données ?",
+      buckets:["Conforme à ma liste","Élément inventé"],
+      items:[
+        {t:"Remise de 7 % sur l'ensemble de la gamme filtres à huile", a:0},
+        {t:"Livraison sous 48 h ouvrées", a:1},
+        {t:"Offre valable jusqu'au 31 décembre", a:0},
+        {t:"Franco de port dès 800 € HT", a:0},
+        {t:"Remise portée à 9 % au-delà de 25 000 €", a:1},
+        {t:"RFA selon nos conditions en vigueur", a:0},
+        {t:"Garantie constructeur 2 ans sur tous les filtres", a:1}
+      ] },
+    { type:"scenario", title:"Trois relances",
+      situation:"Vous demandez trois versions de relance : neutre, pressante, avec porte de sortie. Le client est un grossiste historique, en retard sur une réponse, sans tension.",
+      options:["La pressante : il faut avancer.","La neutre : la relation est bonne, pas de raison de forcer.","La porte de sortie : ça lui laisse le choix."],
+      a:1, e:"Le ton se choisit selon le client, pas selon votre impatience. Un historique sans tension appelle la version neutre. La porte de sortie est pour un client qu'on sent en train de partir ; la pressante pour une échéance réelle." }
+  ],
+  next:"Avant la séance 11 : rédigez une vraie offre avec cette méthode, pointez chaque chiffre sur votre liste. Chronométrez. Comparez avec votre temps habituel.",
+  qids:[48,49,50]
+},
+
+/* ───────────────────────── SÉANCE 11 ───────────────────────── */
+{ id:"s11", num:11, t:"Le vocabulaire pour en parler", icon:"🗣️", cat:"vocab", dur:"30 min",
+  obj:"Comprendre les huit mots qui reviennent, et savoir les expliquer sans jargon à quelqu'un qui « n'est pas bon en IA ».",
+  lesson:[
+    "Vous avez besoin de deux vocabulaires. Le premier pour comprendre ce qu'on vous propose — Christophe, les prestataires, les articles. Le second pour en parler à Jasper sans le perdre. Ce sont deux compétences différentes. On fait les deux.",
+    "<b>Modèle</b> : le moteur (GPT-5, Claude, Gemini). ChatGPT est l'application, GPT est le modèle dedans. <b>Prompt</b> : votre demande. <b>Hallucination</b> : une réponse inventée avec assurance — séance 1. <b>Fenêtre de contexte</b> : tout ce que l'IA a sous les yeux dans la conversation en cours ; au-delà d'une certaine longueur, elle oublie le début. C'est pour ça qu'on démarre une nouvelle conversation par sujet.",
+    "<b>Mémoire</b> : la capacité de retenir des choses d'une conversation à l'autre. Elle existe dans ChatGPT, elle est partielle, et vous ne contrôlez pas ce qui est retenu. Ne comptez pas dessus : mettez ce qui compte dans un Projet. <b>Projet / GPT personnalisé</b> : un espace avec instructions et fichiers permanents — séance 5. <b>Mode raisonnement</b> : un réglage où le modèle prend plus de temps pour réfléchir avant de répondre ; utile pour un calcul ou un problème complexe, inutile pour un mail.",
+    "<b>Automatisation</b> : un enchaînement d'actions qui se déclenche tout seul — « quand un mail arrive avec tel objet, crée une ligne dans tel fichier ». Ce n'est pas de l'IA : c'est de la mécanique, comme une règle Outlook. Outils : Make, Zapier, Power Automate. <b>Agent</b> : une IA qui ne se contente pas de répondre, mais enchaîne des actions vers un but — chercher, lire, écrire dans un outil, recommencer si ça échoue. C'est là que l'IA et l'automatisation se rejoignent, et c'est le chantier de Christophe, pas votre usage quotidien. <b>Connecteur</b> : le branchement entre une IA et un outil (Outlook, Business Central). Sans connecteur, l'IA ne voit rien.",
+    "Maintenant, pour Jasper. Il ne veut pas savoir ce qu'est un connecteur. Il veut savoir si ça va faire des erreurs et si les données sont en sécurité. Traduction : « Ça se trompe parfois, comme un stagiaire brillant. Donc on relit tout ce qui contient un chiffre, et on ne lui donne pas les tarifs. » Deux phrases. Pas un mot de jargon. C'est la compétence de la séance."
+  ],
+  prac:[
+    { type:"classify", title:"IA ou pas IA ?",
+      intro:"Classez chaque élément : c'est de l'intelligence artificielle, c'est de l'automatisation sans IA, ou c'est un branchement (connecteur).",
+      buckets:["IA","Automatisation","Connecteur"],
+      items:[
+        {t:"Une règle Outlook qui range les mails d'un fournisseur dans un dossier", a:1},
+        {t:"ChatGPT qui rédige un brouillon de réponse", a:0},
+        {t:"Le lien entre Copilot et votre boîte Outlook", a:2},
+        {t:"Un flux Make qui copie chaque nouvelle commande dans un Excel", a:1},
+        {t:"Un programme qui lit vos mails, répond aux simples et vous transmet les autres", a:0},
+        {t:"L'accès de ChatGPT à votre Google Drive", a:2},
+        {t:"Un rappel automatique 3 jours avant la fin d'une promo", a:1}
+      ] },
+    { type:"write", title:"Expliquez à Jasper",
+      intro:"Jasper vous dit : « je ne suis pas bon en IA, et j'ai peur que ça raconte n'importe quoi avec nos données ». Répondez-lui en 3 à 5 phrases, sans aucun mot technique.",
+      criteres:[
+        { label:"Aucun mot de jargon", test:t=>!/(prompt|hallucin|modele|contexte|agent|automatis|connecteur|api|rag|token|gpt|llm|fine|multimodal)/.test(t), aide:"Pas de « prompt », « modèle », « hallucination », « agent », « API ». Des mots de tous les jours." },
+        { label:"Vous reconnaissez que ça peut se tromper", test:t=>/(trompe|erreur|se plante|pas toujours|parfois faux|invent)/.test(t), aide:"Ne niez pas : « oui, ça se trompe parfois ». C'est ce qui vous rend crédible." },
+        { label:"Vous dites concrètement ce qu'on fait contre les erreurs", test:t=>/(relit|reli|verif|contr[oô]l|on regarde|on ne prend pas|a la main)/.test(t), aide:"« On relit tout ce qui contient un chiffre. »" },
+        { label:"Vous dites concrètement ce qu'on fait pour les données", test:t=>/(tarif|marge|donnee|confidenti|on ne (lui )?donne pas|on ne met pas|charte|anonym)/.test(t), aide:"« On ne lui donne jamais les tarifs ni les marges. On a une charte. »" },
+        { label:"Une comparaison ou un exemple parlant", test:t=>/(comme un|comme une|stagiaire|assistant|collaborateur|par exemple|c.est comme)/.test(t), aide:"« Comme un stagiaire brillant qui n'a pas le droit d'ouvrir le coffre. »" },
+        { label:"Court : 5 phrases maximum", test:t=>(t.match(/[.!?]/g)||[]).length<=6, aide:"Si c'est long, Jasper décroche. Cinq phrases." }
+      ],
+      modele:"Ça se trompe parfois, oui — comme un stagiaire brillant qui a lu énormément mais qui ne connaît pas la maison. Donc on relit tout ce qui contient un chiffre ou une promesse, et on ne lui donne jamais les tarifs, les marges ni les contrats. On a une charte qui dit exactement ce qui sort et ce qui ne sort pas. Ce qu'on lui confie, c'est la rédaction, le tri et la mise en forme : là, il n'y a rien à inventer. Et tu n'as pas besoin d'être bon en IA pour ça, tu as besoin d'être bon en relecture, ce que tu es déjà.",
+      conseil:"La dernière phrase retourne l'objection : « je ne suis pas bon en IA » devient un atout. C'est la phrase qui fait basculer." },
+    { type:"scenario", title:"Ce que dit Christophe",
+      situation:"Christophe présente le chantier : « un agent connecté à Business Central qui prépare les commandes ». Jasper vous regarde.",
+      options:["« C'est de la magie, ça va tout faire tout seul. »","« C'est un programme qui lira les commandes dans notre logiciel et préparera les documents, et qu'on vérifie avant validation. Ce n'est pas ce qu'on utilise au quotidien, c'est un projet à part. »","« Je ne sais pas, c'est technique. »"],
+      a:1, e:"Traduire sans jargon, situer le périmètre (projet à part), rappeler le contrôle humain. Trois choses en deux phrases. C'est votre rôle dans la pièce : la traduction." }
+  ],
+  next:"Avant la séance 12 : choisissez un dossier de Jasper — un fournisseur, un client retail — sur lequel vous pourriez montrer un résultat concret. Demandez-lui le mail ou le fichier, sans expliquer pourquoi si vous préférez.",
+  qids:[51,52,53,54,55,56]
+},
+
+/* ───────────────────────── SÉANCE 12 ───────────────────────── */
+{ id:"s12", num:12, t:"La démo pour Jasper", icon:"🎯", cat:"vocab", dur:"30 min",
+  obj:"Préparer une démonstration de dix minutes, sur un dossier de Jasper, avec un chiffre avant/après et une réponse prête à ses trois objections.",
+  lesson:[
+    "Ce qui convaincra Jasper, vous l'avez dit vous-même : un résultat sur ses actions. Pas une conférence, pas un argumentaire. Dix minutes, son dossier, devant lui.",
+    "La structure. <b>Une minute</b> : le chiffre. « Je passais 2 h 15 par jour dans les mails, je suis à 1 h 20. Une offre me prenait 45 minutes, elle m'en prend 12. » Vos mesures des séances 4, 5 et 10. <b>Cinq minutes</b> : le geste en direct, sur son dossier. Un mail fournisseur qu'il doit traiter, vous le collez dans le projet, le brouillon sort, vous le relisez ensemble et vous corrigez une chose devant lui. Le fait de corriger est le message. <b>Deux minutes</b> : les trois règles — on relit les chiffres, on ne donne pas les tarifs, ça n'envoie rien tout seul. <b>Deux minutes</b> : sa question. Vous avez les réponses.",
+    "Ses trois objections et vos réponses. « Ça fait des erreurs » — oui, et c'est pour ça qu'on relit ; montrez la correction que vous venez de faire. « Nos données » — la charte, rouge orange vert ; et l'offre entreprise qui s'engage à ne pas entraîner dessus, que Christophe met en place. « Je ne suis pas bon en IA » — vous n'avez pas besoin de l'être, vous avez besoin d'être bon en relecture ; c'est déjà votre métier.",
+    "Ce qu'il ne faut pas dire : « ça se connecte à l'ERP », « ça travaille pendant qu'on dort », « ça apprend de nos corrections ». Trois choses que vous pensiez vraies il y a six semaines, et qui sont fausses pour l'usage quotidien. Si Jasper les entend et découvre qu'elles sont fausses, vous perdez tout le crédit gagné.",
+    "Après la démo, une seule demande : « Essaie sur trois mails cette semaine avec le projet que je t'ai préparé. » Un projet « Mails fournisseurs » avec ses instructions à lui, que vous créez pour lui. Le premier pas coûte zéro effort. C'est comme ça qu'on gagne quelqu'un qui « n'est pas bon » : en lui enlevant tout ce qui fait peur, sauf le résultat."
+  ],
+  prac:[
+    { type:"order", title:"Le déroulé",
+      intro:"Remettez dans l'ordre le plan de la démonstration.",
+      steps:["Annoncer le chiffre avant/après en une phrase","Coller un vrai mail de son dossier dans le projet, devant lui","Relire le brouillon ensemble et corriger une chose à voix haute","Énoncer les trois règles : relire, pas de tarifs, rien ne part tout seul","Répondre à sa question","Proposer l'essai sur trois mails avec un projet préparé pour lui"] },
+    { type:"write", title:"Vos chiffres",
+      intro:"Rédigez la phrase d'ouverture de votre démo, avec vos vraies mesures (ou vos meilleures estimations si vous n'avez pas tout noté). Elle doit tenir en une ou deux phrases.",
+      criteres:[
+        { label:"Au moins un temps « avant » chiffré", test:t=>/(\d+ ?h|\d+ ?min|\d+ heures?|\d+ minutes?)/.test(t) && /(avant|passais|prenait|mettais|il y a)/.test(t), aide:"« Je passais 2 h 15 par jour… », « une offre me prenait 45 minutes… »" },
+        { label:"Au moins un temps « après » chiffré", test:t=>(t.match(/(\d+ ?h|\d+ ?min|\d+ heures?|\d+ minutes?)/g)||[]).length>=2 && /(maintenant|aujourd.hui|je suis a|desormais|elle m.en prend|depuis)/.test(t), aide:"« … je suis à 1 h 20. » Deux chiffres, pas un." },
+        { label:"Une tâche précise est nommée (mails, offre, stats, promo)", test:t=>/(mail|offre|devis|stat|promo|compte.rendu|relance)/.test(t), aide:"Un gain sur une tâche nommée vaut mieux qu'un gain « en général »." },
+        { label:"Deux phrases maximum", test:t=>(t.match(/[.!?]/g)||[]).length<=3, aide:"C'est une ouverture, pas un rapport." }
+      ],
+      modele:"Je passais plus de 2 h par jour dans les mails ; depuis six semaines je suis à 1 h 20. Une offre grand compte me prenait 45 minutes, elle m'en prend 12 — et je vais te montrer sur ton dossier Fournisseur X.",
+      conseil:"Si vous n'avez pas mesuré, dites-le honnêtement (« j'estime ») plutôt que d'arrondir vers le haut. Jasper détecte l'exagération, et c'est exactement ce qu'il craint de l'IA." },
+    { type:"classify", title:"À dire, à ne pas dire",
+      intro:"Devant Jasper, quelles phrases sont vraies et utiles, lesquelles sont fausses ou risquées ?",
+      buckets:["Je peux le dire","Je ne le dis pas"],
+      items:[
+        {t:"« Ça se trompe parfois, donc on relit tout ce qui contient un chiffre. »", a:0},
+        {t:"« Ça se connecte directement à Business Central. »", a:1},
+        {t:"« Ça n'envoie jamais rien tout seul, c'est moi qui clique. »", a:0},
+        {t:"« Ça apprend de nos corrections, ça ne refera plus l'erreur. »", a:1},
+        {t:"« On ne lui donne ni les tarifs ni les marges, c'est dans la charte. »", a:0},
+        {t:"« Ça travaille pendant qu'on fait autre chose. »", a:1},
+        {t:"« Ce que Christophe met en place, c'est un autre projet, avec d'autres garanties. »", a:0},
+        {t:"« C'est infaillible sur les chiffres si on dépose le fichier. »", a:1}
+      ] }
+  ],
+  next:"Faites la démo. Puis revenez dans l'app : le mode Examen vous dira où vous en êtes sur l'ensemble. Et gardez prompts.txt à jour — c'est votre vrai outil.",
+  qids:[57,58,59,60]
+}
+);
+/* Questions. TOUJOURS ajouter à la fin — les qids des séances sont des index. */
+const Q = [
+/* s1 — base : 0-6 */
+{ c:"base", d:1, q:"Quand une IA comme ChatGPT répond, elle…", o:["Cherche la réponse dans une base de connaissances vérifiée","Compose une suite de mots plausible à partir de ce qu'elle a appris","Interroge internet à chaque fois","Demande à un humain chez OpenAI"], a:1, e:"Elle prédit les mots les plus probables. Le plausible et le vrai coïncident souvent, pas toujours." },
+{ c:"base", d:1, q:"On appelle « hallucination »…", o:["Un bug rare qui arrive quand le serveur est saturé","Une réponse inventée, donnée avec la même assurance qu'une réponse juste","Une réponse trop longue","Le fait que l'IA refuse de répondre"], a:1, e:"Ce n'est pas un bug, c'est une propriété du fonctionnement. On l'encadre, on ne l'élimine pas." },
+{ c:"base", d:2, q:"Vous demandez à ChatGPT le CA moyen d'un client trade chez Planet Line sans rien déposer. Il répond « environ 42 000 € ». Ce chiffre est…", o:["Une estimation basée sur des données du secteur","Probablement issu de conversations précédentes","Une invention plausible : il n'a aucune donnée de votre entreprise","Fiable si vous lui demandez sa source"], a:2, e:"Sans données fournies, tout chiffre propre à votre entreprise est fabriqué. Demander la source produira une justification tout aussi inventée." },
+{ c:"base", d:2, q:"Dans ChatGPT tel que vous l'utilisez, l'IA voit…", o:["Votre boîte Outlook","Business Central","Le serveur de fichiers","Uniquement ce que vous collez ou déposez dans la conversation"], a:3, e:"Sans connecteur — un autre produit, un autre contrat — l'IA ne voit que la conversation." },
+{ c:"base", d:1, q:"Quel signal doit vous alerter dans une réponse d'IA ?", o:["Elle est courte","Elle cite une source précise que vous ne pouvez pas ouvrir","Elle pose une question","Elle propose plusieurs options"], a:1, e:"Une source nommée, un chiffre précis, un ton d'autorité sur un sujet propre à votre entreprise : ce sont les tells d'une invention." },
+{ c:"base", d:2, q:"Ce que vous pouvez prendre tel quel sans vérifier :", o:["Une référence de pièce","Une date d'obligation réglementaire","La structure et le style d'un mail reformulé","Un montant calculé sans méthode affichée"], a:2, e:"Le style, la structure, les idées : pas de vérification. Tout ce qui est vérifiable (chiffre, date, référence, règle) doit l'être." },
+{ c:"base", d:3, q:"L'IA affirme : « Le barème FEDA 2024 fixe la RFA grossiste à 3,5 % ». Réaction correcte ?", o:["Noter 3,5 %","Vérifier si ce barème existe avant tout usage — et en pratique, il n'existe pas sous cette forme","Demander à l'IA le lien vers le barème","Utiliser 3,5 % comme point de départ de négociation"], a:1, e:"Un barème précis sur vos conditions commerciales est un signal d'alerte typique. Vos RFA sont dans vos contrats, nulle part ailleurs." },
+/* s2 — prompt : 7-13 */
+{ c:"prompt", d:1, q:"Les quatre éléments d'un prompt qui marche :", o:["Politesse, question, merci, signature","Rôle, contexte, format, contrainte","Sujet, longueur, langue, date","Objectif, budget, délai, responsable"], a:1, e:"Rôle (qui répond), contexte (ce qu'elle ne peut pas deviner), format (ce que vous voulez recevoir), contrainte (ce qu'il ne faut pas faire)." },
+{ c:"prompt", d:2, q:"L'élément le plus souvent oublié, et qui fait la plus grande différence :", o:["Le rôle","Le contexte","Le format","La politesse"], a:1, e:"Sans contexte, l'IA produit une réponse générique valable pour n'importe quelle entreprise." },
+{ c:"prompt", d:1, q:"« N'invente aucun chiffre ; si une information manque, pose-moi la question. » C'est…", o:["Un rôle","Un contexte","Un format","Une contrainte"], a:3, e:"Et c'est la contrainte à mettre dans presque tous vos prompts professionnels." },
+{ c:"prompt", d:2, q:"Vous obtenez de bons résultats après 10 relances. Le problème :", o:["Aucun, c'est normal","La première demande était incomplète : un prompt complet divise les échanges par trois","L'IA est lente","Il faut changer d'outil"], a:1, e:"Ce n'est pas le nombre de relances qui fait la qualité, c'est la première demande." },
+{ c:"prompt", d:2, q:"« Fais-moi un argumentaire pour une gamme d'ampoules LED. » Il manque surtout…", o:["Le rôle","Le format","Le contexte : quelle gamme, quel prix, quel client, quelle concurrence","Rien, c'est suffisant"], a:2, e:"Rôle et format manquent aussi, mais le contexte est ce qui rend le résultat vôtre au lieu de générique." },
+{ c:"prompt", d:1, q:"Pour obtenir un tableau à trois colonnes, vous devez…", o:["Le demander explicitement dans le prompt","Le reformater vous-même après","Utiliser un outil spécial","Poser la question deux fois"], a:0, e:"Le format se demande. Sans ça, vous recevez de la prose." },
+{ c:"prompt", d:3, q:"Votre meilleur résultat (visuels de présentoir) a marché grâce à un « prompt clair ». Ce qui l'a rendu clair, probablement :", o:["Il était court","Il décrivait précisément ce que vous vouliez voir — contexte et format","Il était poli","Il était en anglais"], a:1, e:"Ce qui a marché par instinct doit devenir une méthode : contexte et format explicites, à chaque fois." },
+/* s3 — data : 14-20 */
+{ c:"data", d:1, q:"Avec un abonnement ChatGPT individuel, vos conversations…", o:["Ne quittent jamais votre ordinateur","Peuvent servir à améliorer le modèle, sauf si vous désactivez l'option dans les paramètres","Sont automatiquement supprimées après 24 h","Sont lues par votre entreprise"], a:1, e:"Paramètres → Contrôles des données → « Améliorer le modèle pour tous ». À désactiver." },
+{ c:"data", d:1, q:"Dans la charte de Planet Line, « rouge » désigne…", o:["Ce qu'on colle tel quel","Ce qu'on anonymise","Ce qui ne sort jamais : tarifs, marges, RH, contrats, accès","Les mails urgents"], a:2, e:"Vert : tel quel. Orange : anonymiser. Rouge : jamais." },
+{ c:"data", d:2, q:"L'export CA RFA avec noms de clients et montants, c'est…", o:["Vert","Orange : anonymiser (colonne client codée) avant de déposer","Rouge","Sans importance"], a:1, e:"Une colonne « Client » remplacée par des codes suffit. Nico peut sortir l'export déjà codé." },
+{ c:"data", d:1, q:"Anonymiser, concrètement, c'est…", o:["Supprimer tout le contenu sensible","Remplacer les valeurs (noms, montants, taux) par des étiquettes, en gardant la structure","Écrire en anglais","Utiliser un autre compte"], a:1, e:"« Ets Durand » → « Client A », « 6 % » → « [TAUX] ». L'IA travaille aussi bien avec des étiquettes." },
+{ c:"data", d:2, q:"Ce que les offres entreprise (ChatGPT Business, Copilot M365) apportent principalement :", o:["Un modèle plus intelligent","L'engagement contractuel de ne pas entraîner sur vos données","Des réponses plus rapides","La connexion automatique à l'ERP"], a:1, e:"C'est la raison principale de leur existence, et la réponse à l'objection de Jasper sur les données." },
+{ c:"data", d:2, q:"Un identifiant Business Central pour que l'IA « aille voir » :", o:["Vert, c'est pratique","Orange","Rouge : les accès ne sortent jamais, et l'IA n'irait voir nulle part","Ça dépend de l'outil"], a:2, e:"Deux erreurs en une : un accès est rouge, et ChatGPT ne se connecte pas à un ERP." },
+{ c:"data", d:3, q:"Pourquoi la charte existe-t-elle ?", o:["Pour interdire l'IA","Pour que la réponse à « et si ça fuite ? » ne dépende pas de la bonne volonté de chacun","Pour l'assurance","Parce que c'est obligatoire"], a:1, e:"Une règle écrite protège mieux qu'une prudence individuelle, parce que tout le monde finit par oublier une fois." },
+/* s4 — mail : 21-26 */
+{ c:"mail", d:1, q:"Plus de 2 h par jour pour 20 à 50 mails. Le temps part surtout dans…", o:["L'écriture","La décision : lequel traiter, lequel attendre, lequel ignorer","La lecture","Les pièces jointes"], a:1, e:"3 à 5 minutes par mail, c'est de la décision. C'est ce qu'une IA fait bien si on lui donne les mails." },
+{ c:"mail", d:1, q:"Pour copier plusieurs mails d'Outlook vers ChatGPT :", o:["Les ouvrir un par un","Sélectionner (clic, Maj + clic), Ctrl + C, coller","Les transférer à une adresse spéciale","Faire une capture d'écran"], a:1, e:"Outlook colle expéditeur, objet et début du corps. Ça suffit pour trier." },
+{ c:"mail", d:2, q:"Le prompt de tri doit contenir…", o:["Seulement « trie mes mails »","Vos priorités, des catégories fixes, un format tableau avec action, et l'interdiction de déduire","La liste de vos clients","Votre mot de passe Outlook"], a:1, e:"Sans priorités, l'IA trie par urgence apparente. Sans catégories fixes, elle en invente." },
+{ c:"mail", d:2, q:"Le tri classe un grossiste en renégociation en « Info seulement ». Vous…", o:["Concluez que l'outil n'est pas fiable","Corrigez et ajoutez une ligne dans le prompt : ce client est prioritaire ce mois-ci","Demandez à l'IA pourquoi","Abandonnez le tri"], a:1, e:"L'IA ne pouvait pas savoir. Le tri s'améliore en enrichissant le contexte, pas en discutant." },
+{ c:"mail", d:1, q:"Le prompt de tri, vous le…", o:["Retapez chaque matin","Gardez dans un fichier prompts.txt et le collez chaque jour","Mémorisez","Demandez à l'IA de s'en souvenir"], a:1, e:"Un prompt réutilisé ne doit jamais être retapé. La mémoire de l'IA n'est pas fiable pour ça." },
+{ c:"mail", d:2, q:"Copilot dans Outlook fait le tri sans copier-coller. Avantage supplémentaire :", o:["Il est gratuit","Les mails ne sortent pas de Microsoft","Il envoie les réponses tout seul","Il lit aussi l'agenda papier"], a:1, e:"C'est l'un des arguments concrets du chantier entreprise. Il n'envoie rien tout seul, et ne lit pas le papier." },
+/* s5 — mail : 27-31 */
+{ c:"mail", d:1, q:"Un « Projet » dans ChatGPT, c'est…", o:["Une conversation plus longue","Un dossier avec instructions permanentes et fichiers, que chaque conversation reprend","Un abonnement supplémentaire","Un mode de partage"], a:1, e:"Tout ce que vous y écrivez démarre avec ce contexte, sans le recoller." },
+{ c:"mail", d:2, q:"Pour que l'IA écrive dans votre ton, le plus efficace :", o:["Décrire votre ton en dix lignes","Joindre 3 ou 4 de vos vrais mails bien écrits, anonymisés","Lui demander d'être professionnel","Écrire en majuscules"], a:1, e:"L'IA imite bien mieux qu'elle ne suit des consignes abstraites. Trois exemples valent dix lignes." },
+{ c:"mail", d:1, q:"Le brouillon dit « nous vous livrerons sous 48 h ». Vous n'avez rien écrit sur le délai.", o:["C'est notre délai habituel, je laisse","Je supprime et je rends la règle anti-promesse permanente dans le projet","Je demande à l'IA de confirmer","Je change de projet"], a:1, e:"Le délai « habituel » est ce que l'IA a inventé à partir du vraisemblable. L'IA ne sait rien de votre logistique." },
+{ c:"mail", d:1, q:"L'IA peut-elle envoyer le mail à votre place ?", o:["Oui dans ChatGPT","Oui dans Copilot","Non, ni l'un ni l'autre : vous relisez et cliquez toujours","Oui si vous l'autorisez"], a:2, e:"Et c'est une bonne chose — c'est la réponse à l'objection de Jasper sur les erreurs." },
+{ c:"mail", d:2, q:"Un mail écrit sous le coup de l'agacement, comme exemple de style dans le projet :", o:["Bon exemple, c'est authentique","À exclure : l'IA reproduira le ton","Bon exemple si anonymisé","Sans effet"], a:1, e:"Choisissez des mails que vous trouvez bien écrits. L'IA reproduit ce qu'elle voit." },
+/* s6 — mail : 32-35 */
+{ c:"mail", d:1, q:"Après une réunion, le geste proposé :", o:["Rédiger le compte-rendu à la main le soir","Dicter en vrac au téléphone dans les 10 minutes, faire structurer, relire","Demander à l'IA de deviner ce qui s'est dit","Ne rien noter"], a:1, e:"Deux minutes de dictée, trente secondes de structuration, une relecture. Le compte-rendu existe." },
+{ c:"mail", d:2, q:"Dans un compte-rendu, « tout le monde est d'accord qu'il faudrait écrire la règle de prix » est…", o:["Une décision","Une action","Un point ouvert ou une action sans responsable — pas une décision","Un détail"], a:2, e:"Une décision a un responsable et une date. Le reste est un point ouvert." },
+{ c:"mail", d:1, q:"Copilot peut lire votre agenda si…", o:["Il est intelligent","Vos échéances sont dans Outlook","Vous prenez une photo du carnet","Vous lui donnez la date du jour"], a:1, e:"Aucune IA ne lit un carnet. Mettez au moins les échéances à plus d'une semaine dans Outlook." },
+{ c:"mail", d:3, q:"Pourquoi le compte-rendu dicté est un bon usage à montrer à Jasper ?", o:["C'est rapide","Il n'y a rien à inventer : l'IA ne fait que ranger vos propres mots","Ça fait moderne","Ça remplace les réunions"], a:1, e:"Un usage sans invention possible répond directement à sa peur des erreurs." },
+/* s7 — excel : 36-40 */
+{ c:"excel", d:1, q:"Pour obtenir une formule, vous donnez à l'IA…", o:["Le nom du fichier","Les en-têtes exacts, deux lignes d'exemple, et ce que vous voulez en sortie","Une capture d'écran","Le tableau entier en texte"], a:1, e:"Colonnes avec lettres, exemples, résultat attendu, cellule cible, « en français, pour Excel »." },
+{ c:"excel", d:2, q:"Pourquoi préciser « en français » ?", o:["Pour la politesse","Parce que les noms de fonctions changent selon la langue d'Excel : SI et non IF","Pour la traduction du résultat","Ce n'est pas nécessaire"], a:1, e:"Une formule anglaise collée dans un Excel français renvoie une erreur." },
+{ c:"excel", d:1, q:"Avant de tirer une formule sur 300 lignes :", o:["Tirer, puis vérifier une ligne","Vérifier une ligne à la main d'abord","Demander à l'IA de vérifier","Sauvegarder"], a:1, e:"Un prix T2 à 100 € doit donner 92. Si oui, tirez. Si non, donnez le cas précis à l'IA." },
+{ c:"excel", d:2, q:"−8 % puis −10 % (remises successives) sur 100 € donne…", o:["82 €","82,80 €","80 €","90 €"], a:1, e:"100 × 0,92 = 92, puis 92 × 0,90 = 82,80. Pas 100 − 18." },
+{ c:"excel", d:3, q:"Quand ChatGPT fait un calcul sur un fichier déposé, il est fiable si…", o:["Il répond vite","Il affiche une étape « Analyse » ou du code : il a réellement calculé","Il donne beaucoup de décimales","Il est poli"], a:1, e:"Quand il « calcule » en texte, il peut se tromper. Quand il exécute un programme, le calcul est juste." },
+/* s8 — excel : 41-44 */
+{ c:"excel", d:1, q:"Les deux choses à exiger dans une analyse de fichier :", o:["Rapidité et couleur","La méthode de calcul et un chiffre contrôlable à la main","Un graphique et un résumé","Le nom de l'auteur"], a:1, e:"Méthode visible + un chiffre que vous refaites à la main. Si le premier tient, le reste tient." },
+{ c:"excel", d:2, q:"L'IA répond en trois secondes avec un tableau, sans étape d'analyse, sur un fichier de 400 lignes.", o:["Parfait, elle est rapide","Méfiance : elle a peut-être lu les premières lignes et extrapolé — demandez « calculé ou estimé ? »","C'est normal pour un petit fichier","Il faut redéposer le fichier"], a:1, e:"Elle répond honnêtement à cette question directe." },
+{ c:"excel", d:2, q:"Avant : 9 200 €. Après : 5 800 €. Baisse en % :", o:["27 %","37 %","41 %","63 %"], a:1, e:"3 400 / 9 200 = 0,37." },
+{ c:"excel", d:2, q:"Après l'analyse, pour la réunion commerciale, vous demandez…", o:["Un jugement sur chaque commercial","Trois graphiques et 5 lignes de commentaire, sans jugement sur les personnes","Une liste des fautes","Un classement des clients à abandonner"], a:1, e:"Nico sort les données, vous les faites parler. Le jugement reste humain." },
+/* s9 — excel : 45-47 */
+{ c:"excel", d:1, q:"Sur les mécaniques promotionnelles proposées par l'IA, la vérification nécessaire :", o:["Aucune : ce sont des idées, vous êtes le juge","Chaque chiffre","La source","La date"], a:0, e:"Idées et structure : pas de vérification. Chiffres et calculs : vérification. Le brief doit demander « pas seulement des remises »." },
+{ c:"excel", d:2, q:"Le visuel généré affiche « plaqetes » au lieu de « plaquettes ».", o:["Régénérer jusqu'à ce que ce soit juste","Générer le visuel sans texte, ajouter le texte dans PowerPoint","Changer de mot","Accepter"], a:1, e:"Les générateurs d'images ne savent pas écrire de manière fiable. Le texte s'ajoute après." },
+{ c:"excel", d:2, q:"Un logo de marque fournisseur dans un visuel généré :", o:["Pratique","À éviter : problème de droits, pas d'IA","Autorisé si petit","Autorisé pour un usage interne"], a:1, e:"Utilisez les visuels officiels fournis par la marque." },
+/* s10 — prompt : 48-50 */
+{ c:"prompt", d:1, q:"Pour une offre commerciale, la méthode :", o:["Décrire l'offre en une phrase","Donner la trame et les données séparément, l'IA assemble sans décider","Laisser l'IA proposer les conditions","Coller une ancienne offre et demander « pareil »"], a:1, e:"La liste de données à part rend l'offre vérifiable en 30 secondes." },
+{ c:"prompt", d:2, q:"« Livraison sous 48 h ouvrées » apparaît dans l'offre. Ce n'était pas dans votre liste.", o:["C'est plausible, je garde","Élément inventé : à supprimer, et vérifier les autres chiffres","Je demande confirmation à l'IA","Je l'ajoute à ma liste"], a:1, e:"Un chiffre qui n'est pas dans votre liste a été inventé, même s'il semble cohérent." },
+{ c:"prompt", d:2, q:"Trois versions de relance (neutre, pressante, porte de sortie). Vous choisissez selon…", o:["Votre impatience","Le client et l'historique","La plus courte","La première"], a:1, e:"Trois versions coûtent le même prix qu'une. Le ton se choisit selon le client." },
+/* s11 — vocab : 51-56 */
+{ c:"vocab", d:1, q:"ChatGPT et GPT-5, c'est…", o:["La même chose","ChatGPT est l'application, GPT-5 le modèle (le moteur) dedans","GPT-5 est l'application","Deux entreprises"], a:1, e:"Le modèle est le moteur. L'application est ce que vous ouvrez." },
+{ c:"vocab", d:2, q:"Une règle Outlook qui range les mails d'un fournisseur dans un dossier :", o:["De l'IA","De l'automatisation, sans IA","Un connecteur","Un agent"], a:1, e:"Un enchaînement d'actions qui se déclenche tout seul, sans rien comprendre : de la mécanique." },
+{ c:"vocab", d:2, q:"Un « agent » :", o:["Un assistant personnel","Une IA qui enchaîne des actions vers un but, et recommence si ça échoue","Un connecteur","Un abonnement"], a:1, e:"Là où l'IA et l'automatisation se rejoignent. Chantier entreprise, pas usage quotidien." },
+{ c:"vocab", d:1, q:"La « fenêtre de contexte » :", o:["La fenêtre du navigateur","Tout ce que l'IA a sous les yeux dans la conversation en cours ; au-delà, elle oublie le début","Une mémoire permanente","Un réglage de confidentialité"], a:1, e:"C'est pour ça qu'on démarre une nouvelle conversation par sujet." },
+{ c:"vocab", d:2, q:"La « mémoire » de ChatGPT :", o:["Retient tout définitivement","Existe, est partielle, et vous ne contrôlez pas ce qui est retenu — ne comptez pas dessus","N'existe pas","Remplace les Projets"], a:1, e:"Mettez ce qui compte dans un Projet, pas dans l'espoir que l'IA s'en souvienne." },
+{ c:"vocab", d:3, q:"Jasper : « j'ai peur que ça raconte n'importe quoi ». La bonne réponse commence par…", o:["« Non, c'est fiable. »","« Oui, ça se trompe parfois — donc on relit tout ce qui contient un chiffre. »","« C'est technique. »","« Christophe s'en occupe. »"], a:1, e:"Reconnaître, puis dire ce qu'on fait contre. Nier détruit la crédibilité." },
+/* s12 — vocab : 57-60 */
+{ c:"vocab", d:1, q:"La démo pour Jasper se fait sur…", o:["Un exemple générique","Un dossier à lui","Vos mails","Un fichier de test"], a:1, e:"Un résultat sur ses actions. C'est ce qu'il a demandé." },
+{ c:"vocab", d:2, q:"Pendant la démo, vous corrigez une phrase du brouillon devant lui. Pourquoi ?", o:["Parce que le brouillon était mauvais","Parce que la correction EST le message : on relit, on garde la main","Pour gagner du temps","Par habitude"], a:1, e:"Montrer le contrôle humain vaut mieux que promettre qu'il n'y a pas d'erreur." },
+{ c:"vocab", d:2, q:"Phrase à ne pas dire devant Jasper :", o:["« Ça n'envoie rien tout seul. »","« Ça apprend de nos corrections, ça ne refera plus l'erreur. »","« On ne lui donne pas les tarifs. »","« Ça se trompe parfois. »"], a:1, e:"Fausse pour l'usage quotidien. S'il l'entend puis découvre que c'est faux, vous perdez le crédit gagné." },
+{ c:"vocab", d:2, q:"La demande à la fin de la démo :", o:["Qu'il s'abonne","Qu'il lise la charte","« Essaie sur trois mails cette semaine avec le projet que je t'ai préparé. »","Qu'il rencontre Christophe"], a:2, e:"Le premier pas coûte zéro effort. C'est comme ça qu'on gagne quelqu'un qui « n'est pas bon »." }
+];
+Q.forEach((x,i)=> x.id = i);
+
+/* Flashcards : 12 termes, pas 16. */
+const CARDS = [
+  { f:"Modèle", b:"Le moteur (GPT-5, Claude, Gemini). ChatGPT est l'application, le modèle est dedans." },
+  { f:"Prompt", b:"Votre demande. Quatre éléments : rôle, contexte, format, contrainte." },
+  { f:"Hallucination", b:"Réponse inventée avec assurance. Propriété du fonctionnement, pas un bug. Tout ce qui est vérifiable doit être vérifié." },
+  { f:"Fenêtre de contexte", b:"Ce que l'IA a sous les yeux dans la conversation en cours. Trop long → elle oublie le début. Une conversation par sujet." },
+  { f:"Mémoire", b:"Ce que l'IA retient d'une conversation à l'autre. Partielle, non contrôlée. Ne comptez pas dessus : utilisez un Projet." },
+  { f:"Projet", b:"Dossier ChatGPT avec instructions et fichiers permanents. Chaque conversation démarre avec ce contexte." },
+  { f:"Mode raisonnement", b:"Le modèle prend plus de temps pour réfléchir. Utile pour un calcul ou un problème complexe, inutile pour un mail." },
+  { f:"Automatisation", b:"Enchaînement d'actions déclenché tout seul (règle Outlook, Make, Power Automate). Pas de l'IA : de la mécanique." },
+  { f:"Agent", b:"IA qui enchaîne des actions vers un but et recommence si ça échoue. Chantier entreprise, pas usage quotidien." },
+  { f:"Connecteur", b:"Branchement entre une IA et un outil (Outlook, Business Central). Sans connecteur, l'IA ne voit rien." },
+  { f:"Anonymiser", b:"Remplacer les valeurs (noms, montants, taux) par des étiquettes, en gardant la structure. Remettre les vrais noms à la fin." },
+  { f:"Calculé vs estimé", b:"Étape « Analyse » ou code affiché = vrai calcul, fiable. Réponse en texte instantanée sur un gros fichier = estimation, à vérifier." }
+];
+
+/* Fiches : une par thème, à lire d'une traite. */
+const CHAPTERS = [
+  { id:"f_base", cat:"base", t:"Comment ça marche", icon:"🧠", lesson:[
+    "Une IA de texte prédit les mots les plus probables. Elle ne consulte pas une base de connaissances vérifiée. Le résultat est souvent juste parce que le plausible et le vrai coïncident — pas toujours.",
+    "Quand ils ne coïncident pas, elle invente avec la même assurance : c'est l'hallucination. On ne l'élimine pas, on l'encadre : tout ce qui est vérifiable (chiffre, date, règle, référence, nom) est vérifié. Le style, la structure et les idées se prennent tels quels.",
+    "Dans ChatGPT tel que vous l'utilisez, l'IA ne voit que ce que vous collez ou déposez. Elle ne se connecte ni à Outlook, ni à Business Central, ni au serveur. Les outils branchés existent — autres produits, autres contrats, chantier de l'entreprise."
+  ]},
+  { id:"f_prompt", cat:"prompt", t:"Bien demander", icon:"✍️", lesson:[
+    "Quatre éléments, toujours : le rôle (qui répond), le contexte (ce qu'elle ne peut pas deviner — client, chiffres, historique), le format (tableau, 8 lignes, 3 options), la contrainte (ce qu'il ne faut pas faire, dont « n'invente aucun chiffre »).",
+    "Le contexte est le plus souvent oublié et fait la plus grande différence. Il prend de la place, c'est normal. Un prompt complet divise le nombre de relances par trois.",
+    "Pour une offre ou un devis : la trame et les données séparément, sous forme de liste. L'IA assemble, elle ne décide rien. « Utilise uniquement ma liste ; si une information manque, écris [À COMPLÉTER]. » Chaque chiffre du texte se pointe sur la liste.",
+    "Les prompts réutilisés vivent dans un fichier prompts.txt sur le bureau. Jamais retapés."
+  ]},
+  { id:"f_data", cat:"data", t:"Données et cadre", icon:"🔒", lesson:[
+    "Ce que vous tapez part chez l'éditeur. Abonnement individuel : désactiver « Améliorer le modèle pour tous » dans les contrôles des données. Offres entreprise : engagement contractuel de ne pas entraîner sur vos données — c'est leur raison d'être.",
+    "Charte Planet Line. Vert : tel quel (texte public, mails sans données sensibles, questions de méthode). Orange : anonymiser (noms de clients, chiffres individuels, conditions négociées). Rouge : jamais (tarifs complets, marges, RH, contrats, accès).",
+    "Anonymiser : remplacer les valeurs par des étiquettes en gardant la structure. « Ets Durand » → « Client A ». Export CA : colonne client codée, Nico peut le sortir ainsi.",
+    "Face à « et si ça fuite ? » : on limite par ce qu'on n'y met pas (individuel) ou par contrat (entreprise). La charte existe pour que la réponse ne dépende pas de la bonne volonté de chacun."
+  ]},
+  { id:"f_mail", cat:"mail", t:"Mails et agenda", icon:"📬", lesson:[
+    "Trier : sélectionner les mails du matin dans Outlook, copier, coller avec le prompt de tri (priorités nommées, catégories fixes, tableau avec action, interdiction de déduire). Le tri est une proposition ; on corrige en enrichissant le prompt, pas en discutant.",
+    "Répondre : un Projet « Mails clients » avec instructions permanentes (rôle, ton, règles anti-promesse, format) et 3 ou 4 vrais mails anonymisés comme exemples de style. Coller le mail reçu, une ligne de contexte, relire, envoyer soi-même. Rien ne part tout seul.",
+    "Réunions : dicter en vrac dans les 10 minutes, faire structurer en décisions / actions (responsable, date) / points ouverts, sans rien ajouter. Relire. Envoyer et archiver. Une décision a un responsable et une date ; le reste est un point ouvert.",
+    "Agenda : aucune IA ne lit un carnet. Les échéances à plus d'une semaine vont dans Outlook. Copilot ne voit que ce qui est dans Outlook."
+  ]},
+  { id:"f_excel", cat:"excel", t:"Excel et chiffres", icon:"📊", lesson:[
+    "Formules : décrire les colonnes avec leurs lettres, deux lignes d'exemple, le résultat attendu, la cellule cible, « en français, pour Excel ». Contrôler sur une ligne à la main avant de tirer. Si faux : donner le cas, le résultat obtenu, le résultat attendu.",
+    "Analyses : déposer le fichier (anonymisé), poser une question précise (quoi comparer à quoi), exiger la méthode avant le tableau, demander « sur l'ensemble du fichier, n'estime pas ». Contrôler le premier résultat à la main.",
+    "Calculé ou estimé : une étape « Analyse » ou du code affiché signifie un vrai calcul. Une réponse instantanée en texte sur un gros fichier signifie une estimation. Dans le doute, demander « as-tu calculé ou estimé ? » — la réponse est honnête.",
+    "Promo : brief (gamme, cible, période, objectif chiffré, contraintes, « pas seulement des remises ») → mécaniques → formule contrôlée → simulation → texte dans le Projet → visuel sans texte, texte ajouté dans PowerPoint. Pas de logo fournisseur généré."
+  ]},
+  { id:"f_vocab", cat:"vocab", t:"Vocabulaire et associés", icon:"🗣️", lesson:[
+    "Deux vocabulaires : un pour comprendre ce qu'on vous propose (modèle, fenêtre de contexte, mémoire, Projet, mode raisonnement, automatisation, agent, connecteur), un pour en parler à Jasper sans jargon.",
+    "Automatisation = mécanique sans IA (règle Outlook, Make). Agent = IA qui enchaîne des actions vers un but. Connecteur = branchement IA ↔ outil. L'agent connecté à l'ERP, c'est le chantier de Christophe, pas l'usage quotidien.",
+    "Pour Jasper : « Ça se trompe parfois, comme un stagiaire brillant. Donc on relit tout ce qui contient un chiffre, et on ne lui donne pas les tarifs. Tu n'as pas besoin d'être bon en IA, tu as besoin d'être bon en relecture. »",
+    "La démo : un chiffre avant/après, son dossier, une correction faite devant lui, les trois règles, sa question, puis « essaie sur trois mails avec le projet que je t'ai préparé ». Jamais : « ça se connecte à l'ERP », « ça travaille pendant qu'on dort », « ça apprend de nos corrections »."
+  ]}
+];
+/* Missions terrain : le vrai travail, sur ses vrais dossiers. Résultat collé dans l'app, analysé. Bloque la validation de la séance. */
+const MISSIONS = {
+s1:{ title:"Retrouvez une réponse que vous n'aviez pas vérifiée",
+  intro:"Ouvrez ChatGPT, retrouvez une conversation récente où vous avez obtenu un chiffre, une règle ou une référence. Collez ci-dessous : la réponse de l'IA (ou l'extrait), puis ce que vous auriez dû vérifier et où.",
+  criteres:[
+    { label:"Un extrait de réponse d'IA contenant un chiffre, une règle ou une référence", test:t=>/(\d|%|€|reference|regle|norme|delai|taux)/.test(t) && t.length>80, aide:"Collez le passage concerné, pas un résumé." },
+    { label:"Vous nommez ce qui était vérifiable", test:t=>/(verif|controle|chiffre|reference|date|source|vrai|exact)/.test(t), aide:"« Le chiffre X était vérifiable » / « la référence était à contrôler »." },
+    { label:"Vous dites où vous auriez pu vérifier (fichier, personne, site, ERP)", test:t=>/(fichier|tarif|business central|erp|nico|stephane|jasper|fournisseur|site|catalogue|excel|contrat|conditions)/.test(t), aide:"Une source précise : « dans le fichier Tarif », « en demandant à Stéphane », « sur le site du fournisseur »." }
+  ],
+  modele:"Réponse de l'IA : « Les grossistes appliquent en général un coefficient de 1,8 sur le prix d'achat pour les pièces de freinage. »\n\nVérifiable : le coefficient 1,8 — c'est un chiffre présenté comme une norme du secteur.\nOù vérifier : notre fichier Tarif (coefficients réels par famille) et un appel à Stéphane. En pratique, nos coefficients ne sont pas ceux-là.",
+  conseil:"Le but n'est pas de trouver une erreur. C'est de voir qu'un chiffre plausible et non vérifié passait sans réflexe." },
+
+s2:{ title:"Le même prompt, avant et après",
+  intro:"Utilisez votre prompt réécrit (rôle, contexte, format, contrainte) sur une vraie tâche. Collez : le prompt utilisé, puis 3 lignes sur ce qui a changé dans la réponse par rapport à votre façon habituelle de demander.",
+  criteres:[
+    { label:"Le prompt réel est collé, avec ses quatre éléments", test:t=>/(tu es|agis|en tant que)/.test(t) && /(format|tableau|lignes|mots|liste)/.test(t) && /(n.invente|ne (pas )?invent|pose.moi|si (une info|il manque)|pas de |sans )/.test(t) && t.length>250, aide:"Collez le prompt complet, pas un résumé. Rôle, contexte, format, contrainte doivent y être." },
+    { label:"Vous décrivez ce qui a changé dans la réponse", test:t=>/(chang|differ|mieux|plus (precis|court|utile|direct)|moins (de|long|generique)|avant|d.habitude|cette fois)/.test(t), aide:"« Avant, j'obtenais… Cette fois… » Deux ou trois phrases." },
+    { label:"Vous mentionnez le nombre d'échanges nécessaires", test:t=>/(\d+ (echange|relance|aller|message|essai)|un seul|du premier coup|premiere reponse|sans relance)/.test(t), aide:"« 2 échanges au lieu de 8 », « du premier coup »." }
+  ],
+  modele:"Prompt utilisé :\nTu es chef de produit e-commerce dans la distribution de pièces auto. Contexte : fiche fournisseur brute ci-dessous (kit distribution), pour notre site B2B, fiches actuelles de 120-150 mots avec liste de caractéristiques. Rédige la fiche produit. Format : titre 60 caractères, paragraphe 80 mots, 5 caractéristiques en liste. Contrainte : n'invente aucune caractéristique, écris [À COMPLÉTER] si une info manque.\n\nCe qui a changé : d'habitude je demandais « fais-moi une fiche produit pour ça » et je corrigeais pendant 5 ou 6 échanges. Là, la fiche était utilisable du premier coup, avec deux [À COMPLÉTER] là où le fournisseur n'avait rien donné — ce qui m'a évité deux inventions.",
+  conseil:"Si rien n'a changé, le contexte était encore trop mince. C'est presque toujours ça." },
+
+s3:{ title:"Vos propres feux : vert, orange, rouge",
+  intro:"Listez, pour VOTRE activité, ce que vous collez tel quel, ce que vous anonymisez, ce qui ne sort jamais. Trois blocs, au moins trois éléments chacun, avec vos vrais fichiers et vos vrais types de mails.",
+  criteres:[
+    { label:"Trois blocs identifiables (vert / orange / rouge ou tel quel / anonymiser / jamais)", test:t=>(/vert|tel quel/.test(t))&&(/orange|anonym/.test(t))&&(/rouge|jamais/.test(t)), aide:"Trois titres : « Vert — tel quel », « Orange — anonymiser », « Rouge — jamais »." },
+    { label:"Les tarifs et les marges sont en rouge", test:t=>{ const r=t.indexOf("rouge")>=0?t.indexOf("rouge"):t.indexOf("jamais"); return r>=0 && /(tarif|marge)/.test(t.slice(r)); }, aide:"Le fichier Tarif complet et les marges ne sortent jamais. Ils doivent apparaître dans le bloc rouge." },
+    { label:"Vos vrais fichiers sont nommés (Promo, CA RFA, Cata, Tarif…)", test:t=>(t.match(/(promo|ca rfa|rfa|cata|tarif|export)/g)||[]).length>=2, aide:"Nommez vos fichiers réels et dites dans quel bloc chacun va." },
+    { label:"Au moins un type de mail dans chaque bloc", test:t=>(t.match(/mail/g)||[]).length>=2, aide:"Un mail fournisseur, un mail client avec conditions, un mail interne RH : où va chacun ?" }
+  ],
+  modele:"Vert — tel quel : fiches fournisseurs publiques, mails de prospection sans chiffre, questions de méthode, brouillons de présentation salon, mails d'invitation.\n\nOrange — anonymiser : export CA RFA (colonne client codée), mails clients avec conditions ou montants, fichier Promo (références oui, prix remisés codés), comptes-rendus de rendez-vous clients.\n\nRouge — jamais : fichier Tarif complet, grille de marges, mails internes RH ou sur un salarié, contrats plateformes, identifiants Business Central.",
+  conseil:"Imprimez-le. Collez-le à côté de l'écran. C'est votre charte personnelle, plus concrète que la charte générale." },
+
+s4:{ title:"Trois matins de tri",
+  intro:"Faites le tri du matin trois jours de suite avec votre prompt. Collez : pour chaque jour, le nombre de mails collés et l'heure à laquelle vous êtes sorti de la boîte mail. Puis une ligne : ce qui a marché, ce qui a gêné.",
+  criteres:[
+    { label:"Trois jours identifiables", test:t=>(t.match(/(lundi|mardi|mercredi|jeudi|vendredi|jour ?[123]|j ?[123]|\d{1,2}\/\d{1,2})/g)||[]).length>=3, aide:"« Lundi : … / Mardi : … / Mercredi : … » ou J1, J2, J3." },
+    { label:"Trois heures de sortie", test:t=>(t.match(/\d{1,2} ?[h:] ?\d{0,2}/g)||[]).length>=3, aide:"L'heure à laquelle vous avez fermé Outlook chaque jour : « 10h20 »." },
+    { label:"Le nombre de mails chaque jour", test:t=>(t.match(/\d+ (mails?|messages?)/g)||[]).length>=2, aide:"« 34 mails », « 41 mails »." },
+    { label:"Une observation sur ce qui a marché ou gêné", test:t=>/(march|gen|utile|perdu|trop|bien|mal|corrig|ajout|oubli)/.test(t) && t.length>150, aide:"Une ou deux phrases honnêtes. « Le tri met les mails de Jasper en info seulement, j'ai ajouté une ligne. »" }
+  ],
+  modele:"Lundi : 38 mails collés, sorti de la boîte à 10h05 (d'habitude vers 11h).\nMardi : 44 mails, sorti à 10h20.\nMercredi : 29 mails, sorti à 9h40.\n\nCe qui a marché : la colonne « action en une ligne », je ne relis plus les mails classés Info. Ce qui a gêné : il classait les mails de Stéphane en « cette semaine » alors que je les traite tout de suite — ajouté dans le prompt.",
+  conseil:"Ces trois heures sont votre première mesure. Gardez-les : elles serviront à la séance 12." },
+
+s5:{ title:"Le projet existe, cinq mails sont partis",
+  intro:"Créez le projet « Mails clients » dans ChatGPT, répondez à 5 mails de suivi avec. Collez : les instructions du projet telles que vous les avez enregistrées, puis le temps pris pour le cinquième mail, et une correction que vous avez dû faire sur un brouillon.",
+  criteres:[
+    { label:"Les instructions réelles du projet (rôle, ton, règles, format)", test:t=>/(tu (m.aides|es)|responsable|commercial)/.test(t) && /(ton|direct|vouvoie|formule)/.test(t) && /(jamais|n.invente|ne promet|a valider)/.test(t) && t.length>300, aide:"Collez le texte enregistré dans le projet, pas une description." },
+    { label:"Le temps pris pour le cinquième mail", test:t=>/(\d+ ?(min|minutes?)|\d+ ?secondes?|moins de \d+)/.test(t), aide:"« 4 minutes, relecture comprise. »" },
+    { label:"Une correction concrète faite sur un brouillon", test:t=>/(corrig|supprim|enlev|modifi|remplac|chang)/.test(t) && /(brouillon|il avait|elle avait|l.ia avait|la reponse)/.test(t), aide:"« Le brouillon promettait un délai, je l'ai supprimé. » Ce que vous avez corrigé, précisément." }
+  ],
+  modele:"Instructions du projet :\nTu m'aides à répondre aux mails de mes clients trade. Je suis co-gérant, responsable commercial grossistes et plateformes, distribution pièces auto/moto. Ton direct, vouvoiement, phrases courtes, pas de formule creuse. Ne promets jamais un délai, un prix ou une remise que je n'ai pas écrits — mets [À VALIDER]. 6 à 10 lignes, objet proposé. Tu produis un brouillon, je relis et j'envoie.\n\nCinquième mail : 3 minutes, relecture comprise (d'habitude 10 à 15).\nCorrection : le brouillon disait « nous restons à votre disposition pour tout réassort en urgence » — je ne fais pas d'urgence pour ce client, supprimé.",
+  conseil:"La correction que vous avez faite, notez-la aussi dans les instructions du projet si elle risque de revenir." },
+
+s6:{ title:"La règle de prix, enfin écrite",
+  intro:"Dictez la règle de prix telle que vous la connaissez. Faites-la structurer par l'IA sans rien ajouter. Relisez. Collez le résultat ici — la version que vous envoyez à Jasper et Nico pour relecture.",
+  criteres:[
+    { label:"Les catégories de clients apparaissent", test:t=>/(t1|t2|t3|categorie|grossiste|plateforme|retail|garage|grand compte)/.test(t), aide:"Qui paie quoi : les catégories ou types de clients." },
+    { label:"Des règles chiffrées ou des paliers", test:t=>/(\d+ ?%|coefficient|palier|a partir de|au.dela|minimum|\d{3,} ?€)/.test(t), aide:"Un taux, un coefficient, un palier de volume. Une règle de prix sans chiffre n'en est pas une." },
+    { label:"Les exceptions ou cas particuliers sont nommés", test:t=>/(exception|sauf|cas particulier|hors|specifique|au cas par cas|negoci)/.test(t), aide:"Ce qui échappe à la règle : « les plateformes sont négociées au cas par cas »." },
+    { label:"Une mention « à relire / à valider par Jasper et Nico »", test:t=>/(relire|relecture|valid|a confirmer|a completer)/.test(t) && /(jasper|nico)/.test(t), aide:"En tête ou en pied : « Version à relire par Jasper et Nico ». C'est une proposition, pas une décision." },
+    { label:"Structuré en blocs, pas un seul paragraphe", test:t=>(t.match(/\n/g)||[]).length>=5, aide:"Titres et lignes. Une règle de prix se lit en colonne, pas en bloc." }
+  ],
+  modele:"Règle de prix — version à relire par Jasper et Nico\n\nBase : prix tarif = prix d'achat × coefficient par famille (voir fichier Tarif).\n\nCatégories clients :\n- T1 (grossistes historiques) : tarif −5 %\n- T2 (grossistes) : tarif −8 %\n- T3 (plateformes) : tarif −12 %\n\nPaliers : au-delà de [MONTANT] € par trimestre, remise additionnelle de [X] % (à confirmer).\n\nExceptions : plateformes négociées au cas par cas par Renaud ; retail géré par Jasper avec sa propre grille.\n\nÀ compléter : franco de port, conditions RFA.",
+  conseil:"Les [À COMPLÉTER] sont normaux. Une règle écrite avec des trous vaut mieux qu'une règle complète dans trois têtes." },
+
+s7:{ title:"La vraie formule dans le vrai fichier",
+  intro:"Appliquez la formule obtenue dans votre fichier Promo. Collez : la formule exacte telle qu'elle est dans Excel, puis trois lignes contrôlées à la main (référence, prix tarif, catégorie, promo oui/non, résultat Excel, résultat calculé à la main).",
+  criteres:[
+    { label:"La formule Excel, en français, commençant par =", test:t=>/=\s*(si|arrondi|rechercher|recherchex|si\.conditions)\(/.test(t), aide:"Copiez la cellule : « =SI(C2=\"T1\";B2*0,95;… ». Elle commence par = et utilise des fonctions en français." },
+    { label:"Trois lignes de contrôle avec des montants", test:t=>(t.match(/\d+([.,]\d+)? ?€/g)||[]).length>=6, aide:"Pour chaque ligne : prix tarif et résultat, en euros. Trois lignes = au moins six montants." },
+    { label:"Le résultat Excel et le calcul à la main sont comparés", test:t=>/(main|manuel|calcul|attendu|verif|identique|meme|ok|egal)/.test(t), aide:"« Excel : 82,80 — à la main : 82,80 — OK »." },
+    { label:"Les trois catégories ou les deux cas promo sont couverts", test:t=>((t.match(/t1/g)||[]).length&&(t.match(/t2/g)||[]).length&&(t.match(/t3/g)||[]).length)||(/oui/.test(t)&&/non/.test(t)), aide:"Contrôlez des lignes différentes : une par catégorie, ou avec et sans promo." }
+  ],
+  modele:"Formule en E2 :\n=SI(D2=\"oui\";SI(C2=\"T1\";B2*0,95;SI(C2=\"T2\";B2*0,92;B2*0,88))*0,9;SI(C2=\"T1\";B2*0,95;SI(C2=\"T2\";B2*0,92;B2*0,88)))\n\nContrôles :\n- REF1023, 100 €, T2, promo oui : Excel 82,80 € — à la main 92 × 0,9 = 82,80 € — OK\n- REF2201, 200 €, T3, promo non : Excel 176,00 € — à la main 200 × 0,88 = 176 € — OK\n- REF0457, 50 €, T1, promo oui : Excel 42,75 € — à la main 47,5 × 0,9 = 42,75 € — OK",
+  conseil:"Si un contrôle ne colle pas, c'est ici qu'on le voit, pas dans trois mois devant un client." },
+
+s8:{ title:"Vos clients en baisse, contrôlés",
+  intro:"Analysez le vrai export CA (codé) avec votre prompt. Collez : les 3 premiers clients en baisse tels que l'IA les a sortis (code, CA avant, CA après, écart), puis votre contrôle à la main du premier, et si l'IA a affiché une étape d'analyse.",
+  criteres:[
+    { label:"Trois clients avec des montants avant / après", test:t=>(t.match(/\d[\d ]{2,}([.,]\d+)? ?€/g)||[]).length>=6, aide:"Trois lignes, chacune avec deux montants en euros." },
+    { label:"Les écarts en pourcentage", test:t=>(t.match(/-? ?\d+([.,]\d+)? ?%/g)||[]).length>=3, aide:"L'écart en % pour chacun." },
+    { label:"Le contrôle à la main du premier client, avec le résultat", test:t=>/(main|manuel|recalcul|verif|controle)/.test(t) && /(ok|identique|meme|ecart|differ|juste|faux)/.test(t), aide:"« Contrôle client C014 : somme mois 7-9 = …, mois 10-12 = …, écart = … — identique à l'IA. »" },
+    { label:"Vous dites si l'IA a affiché une étape d'analyse ou du code", test:t=>/(analyse|code|python|calcul (reel|effectu)|etape|a calcule|estim)/.test(t), aide:"« Elle a affiché une étape Analyse » ou « réponse instantanée, j'ai demandé calculé ou estimé ». C'est le signe de fiabilité." }
+  ],
+  modele:"Top 3 baisse (IA) :\n- C014 : 9 200 € → 5 800 €, −37 %\n- C087 : 12 400 € → 8 100 €, −35 %\n- C023 : 6 300 € → 4 500 €, −29 %\n\nContrôle à la main C014 : mois 7-9 = 3 200 + 2 900 + 3 100 = 9 200 € ; mois 10-12 = 2 100 + 1 800 + 1 900 = 5 800 € ; écart 3 400 / 9 200 = 37 % — identique.\n\nL'IA a affiché une étape « Analyse » avec du code avant le tableau, et signalé 2 lignes vides exclues.",
+  conseil:"Ce tableau contrôlé est la première page de votre prochaine présentation commerciaux. Il vous a pris vingt minutes." },
+
+s9:{ title:"Une promo réelle, de bout en bout",
+  intro:"Construisez une vraie promo pour un vrai produit : mécanique choisie, calcul contrôlé, texte d'annonce, visuel. Collez : les quatre morceaux en résumé (2 lignes chacun), le temps total, et la remarque de Stéphane à la relecture.",
+  criteres:[
+    { label:"La mécanique retenue est décrite", test:t=>/(mecanique|offre|remise|palier|achete|offert|lot|pack|degressi)/.test(t), aide:"Quelle mécanique, en deux lignes." },
+    { label:"Le calcul est mentionné avec un chiffre contrôlé", test:t=>/(calcul|formule|simul)/.test(t) && /\d+([.,]\d+)? ?(€|%)/.test(t) && /(controle|verif|main|ok)/.test(t), aide:"« Formule appliquée, contrôlée sur une ligne : 100 € T2 → 82,80 € OK. »" },
+    { label:"Le texte d'annonce a été produit dans le projet, avec vérification des chiffres", test:t=>/(texte|annonce|mailing|whatsapp)/.test(t) && /(projet|chiffre|verif|pointe)/.test(t), aide:"« Texte fait dans le projet Mails clients, chiffres pointés sur ma liste. »" },
+    { label:"Le visuel : fond généré, texte ajouté à part", test:t=>/(visuel|image|presentoir)/.test(t) && /(powerpoint|canva|texte ajoute|ajoute le texte|sans texte|a la main)/.test(t), aide:"« Visuel généré sans texte, prix ajouté dans PowerPoint. »" },
+    { label:"Le temps total et la remarque de Stéphane", test:t=>/(\d+ ?(h|min|minutes?|heures?))/.test(t) && /stephane/.test(t), aide:"« Temps total : 1 h 10. Stéphane : … »" }
+  ],
+  modele:"Mécanique : −12 % sur la gamme plaquettes premium pour toute commande de 5 000 € HT minimum en octobre, +3 % si commande avant le 15.\nCalcul : formule Promo appliquée, contrôlée sur une ligne T2 à 100 € → 82,80 € avec promo, OK. Simulation à 40 % de prise : 3 100 unités écoulées.\nTexte : mailing 110 mots fait dans le projet Mails clients, chiffres pointés sur ma liste, version WhatsApp 3 lignes.\nVisuel : présentoir généré sans texte, prix et dates ajoutés dans PowerPoint.\n\nTemps total : 1 h 15 (d'habitude une demi-journée). Stéphane : « le minimum de 5 000 est trop haut pour les petits grossistes » — passé à 3 000 pour le T2.",
+  conseil:"La remarque de Stéphane est le vrai contrôle. L'IA ne connaît pas vos petits grossistes." },
+
+s10:{ title:"Une offre réelle, chaque chiffre pointé",
+  intro:"Rédigez une vraie offre avec la méthode trame + liste. Collez : votre liste de données, puis l'offre finale, puis le temps pris. Chaque chiffre de l'offre doit être dans la liste.",
+  criteres:[
+    { label:"La liste de données, séparée de l'offre", test:t=>/(liste|donnees)/.test(t) && (t.match(/^\s*[-•*]/gm)||[]).length>=4, aide:"Une liste à puces : gamme, remise, minimum, validité, franco…" },
+    { label:"L'offre finale, structurée", test:t=>/(contexte|proposition|condition|calendrier|prochaine etape)/.test(t) && t.length>600, aide:"L'offre complète, avec ses parties." },
+    { label:"Aucun [À COMPLÉTER] restant dans l'offre finale", test:t=>{ const i=t.search(/(offre finale|offre :|proposition commerciale|objet)/); return i<0 || !/a completer|a valider/.test(t.slice(i)); }, aide:"Les trous ont été remplis par vous avant envoi." },
+    { label:"Le temps pris, comparé à l'habitude", test:t=>/\d+ ?(min|minutes?|h|heures?)/.test(t) && /(habitude|avant|d.ordinaire|normalement|au lieu de)/.test(t), aide:"« 14 minutes au lieu de 45. »" }
+  ],
+  modele:"Liste de données :\n- Gamme : filtres à huile\n- Remise : 7 %\n- Minimum : 15 000 € HT / trimestre\n- Validité : 31 décembre\n- Franco : 800 € HT\n- RFA : conditions en vigueur\n\nOffre finale :\nObjet : Proposition filtres à huile — 4e trimestre\n1. Contexte : depuis trois ans, vous référencez notre gamme filtration avec des volumes réguliers…\n2. Proposition : 7 % de remise sur l'ensemble de la gamme filtres à huile…\n3. Conditions : minimum de 15 000 € HT sur le trimestre, franco de port dès 800 € HT, RFA selon nos conditions en vigueur.\n4. Calendrier : offre valable jusqu'au 31 décembre.\n5. Prochaine étape : je vous propose un point téléphonique la semaine prochaine.\n\nTemps : 14 minutes au lieu de 45 environ.",
+  conseil:"Le pointage chiffre par chiffre prend 30 secondes. Ne le sautez jamais, même quand l'offre a l'air parfaite — surtout quand elle a l'air parfaite." },
+
+s11:{ title:"Dit à Jasper, pour de vrai",
+  intro:"Choisissez un moment informel et dites à Jasper, en deux ou trois phrases sans jargon, comment vous utilisez l'IA et ce que vous faites contre les erreurs. Collez : ce que vous avez dit (de mémoire), et ce qu'il a répondu.",
+  criteres:[
+    { label:"Ce que vous avez dit, sans jargon", test:t=>!/(prompt|hallucin|modele|agent|automatis|connecteur|api|rag|token|llm)/.test(t.split(/(il a (dit|repondu)|jasper ?:|reponse|reaction)/)[0]||t), aide:"Dans votre partie, aucun mot technique. Les mots de Jasper, vous les rapportez tels quels." },
+    { label:"Vous avez reconnu que ça se trompe et dit ce que vous faites contre", test:t=>/(trompe|erreur|invent|se plante)/.test(t) && /(relit|reli|verif|controle|a la main)/.test(t), aide:"« Ça se trompe, donc je relis tout ce qui a un chiffre. »" },
+    { label:"Sa réponse ou sa réaction est rapportée", test:t=>/(il a (dit|repondu|demande|hausse|rigole|souri)|jasper ?:|reaction|reponse de jasper|il m.a)/.test(t), aide:"Ses mots ou son attitude, même « il a haussé les épaules »." },
+    { label:"Ce que vous en concluez pour la démo", test:t=>/(demo|montrer|prochaine|conclu|donc|il faudra|je vais)/.test(t), aide:"« Donc pour la démo, je commence par la relecture. »" }
+  ],
+  modele:"Ce que j'ai dit : « Tu sais, ChatGPT, je m'en sers pour les brouillons de mails et le tri du matin. Ça se trompe parfois, alors je relis tout ce qui a un chiffre, et je ne lui donne jamais les tarifs. Ça m'a fait gagner presque une heure par jour. »\n\nJasper : « Et tu es sûr que ça ne part pas chez eux, nos mails ? » Puis : « Montre-moi un jour. »\n\nConclusion pour la démo : sa vraie question, c'est les données, pas les erreurs. Je commence par la charte et l'anonymisation, puis le mail.",
+  conseil:"Sa première question vous dit par quoi ouvrir la démo. Ne préparez pas la démo que vous aviez en tête, préparez celle qui répond à sa question." },
+
+s12:{ title:"Débrief de la démo",
+  intro:"Faites la démo. Puis collez : le chiffre annoncé, ce que vous avez montré sur son dossier, la correction faite devant lui, sa question et votre réponse, et ce qui a été convenu pour la suite.",
+  criteres:[
+    { label:"Le chiffre avant/après annoncé", test:t=>(t.match(/\d+ ?(h|min|minutes?|heures?)/g)||[]).length>=2, aide:"Les deux temps, avant et après." },
+    { label:"Le dossier de Jasper utilisé", test:t=>/(fournisseur|retail|son (mail|dossier|client)|dossier de jasper)/.test(t), aide:"Quel mail ou fichier à lui vous avez utilisé." },
+    { label:"La correction faite devant lui", test:t=>/(corrig|supprim|modifi|enlev|remplac)/.test(t), aide:"Ce que vous avez changé dans le brouillon, à voix haute." },
+    { label:"Sa question et votre réponse", test:t=>/(question|demande|il a (dit|demande))/.test(t) && /(repondu|reponse|j.ai dit|je lui ai)/.test(t), aide:"Sa question exacte si possible, et ce que vous avez répondu." },
+    { label:"La suite convenue", test:t=>/(convenu|il (va|essaie|teste)|prochaine|trois mails|projet|d.accord|on a decide|suite)/.test(t), aide:"« Il essaie sur trois mails cette semaine avec le projet que je lui ai fait. » Ou ce qu'il a refusé." }
+  ],
+  modele:"Chiffre annoncé : 2 h 15 par jour dans les mails → 1 h 20 depuis six semaines.\nDossier : un mail de son fournisseur de filtration qui demandait une confirmation de volume, collé dans un projet « Mails fournisseurs » préparé pour lui.\nCorrection devant lui : le brouillon disait « nous confirmons le volume habituel », j'ai remplacé par le chiffre exact qu'il m'a donné.\nSa question : « Et si je me trompe en relisant ? » Réponse : « Tu relis déjà tes mails aujourd'hui. Là, tu relis un brouillon au lieu d'écrire une page blanche. Le risque est le même, le temps est divisé par trois. »\nConvenu : il essaie sur trois mails cette semaine, on en reparle vendredi. Nico veut le même projet pour les commerciaux.",
+  conseil:"Si ça n'a pas marché, écrivez-le aussi honnêtement. Une démo ratée bien analysée prépare la suivante. Et il y en aura une." }
+};
+PROG.forEach(p=>{ p.mission = MISSIONS[p.id]; });
+
+/* ===================== 2. ÉTAT ===================== */
+const KEY = "iabureau_renaud_v1";
+const SYNC_KEY = "iabureau_sync_cfg";
+const SYNC_USER = "renaud";
+const DEF = { xp:0, streak:0, lastDay:null, catScore:{}, chaptersDone:[], boxes:{}, examBest:0, badges:[], days:{}, ex:{}, drafts:{}, updatedAt:0 };
+let S = load(); let storageOK = true;
+function load(){ try{ return Object.assign({}, DEF, JSON.parse(localStorage.getItem(KEY))||{}); }catch(e){ storageOK=false; return Object.assign({},DEF); } }
+function saveLocal(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
+function save(){ S.updatedAt=Date.now(); try{ localStorage.setItem(KEY, JSON.stringify(S)); storageOK=true; }catch(e){ storageOK=false; } schedulePush(); }
+function probeStorage(){ try{ localStorage.setItem("__t","1"); localStorage.removeItem("__t"); storageOK=true; }catch(e){ storageOK=false; } }
+function level(){ return Math.floor(S.xp/100)+1; }
+function addXP(n){ S.xp+=n; save(); syncHeader(); }
+function award(b){ if(!S.badges.includes(b)){ S.badges.push(b); save(); toast("🏅 "+b); } }
+function touchStreak(){ const t=new Date().toDateString(); if(S.lastDay!==t){ const y=new Date(Date.now()-864e5).toDateString(); S.streak=(S.lastDay===y)?S.streak+1:1; S.lastDay=t; saveLocal(); } }
+function exDone(id){ return !!(S.ex&&S.ex[id]); }
+function markEx(id){ if(!S.ex) S.ex={}; if(!S.ex[id]){ S.ex[id]=true; save(); addXP(15); toast("✅ Cas pratique validé · +15 XP"); } }
+
+/* utilitaires */
+const app=document.getElementById("app");
+const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const nz=s=>(s||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[’‘`´]/g,"'");
+const shuffled=a=>{const b=[...a];for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];}return b;};
+const hhmm=()=>{const d=new Date();return String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0");};
+let toastT; function toast(m){ const t=document.getElementById("toast"); t.textContent=m; t.classList.add("on"); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove("on"),2200); }
+function go(v,...a){ window.scrollTo(0,0); v(...a); }
+function syncHeader(){
+  const done=Object.keys(S.days).length;
+  document.getElementById("stats").innerHTML=
+    `<span class="pill">Niveau <b>${level()}</b></span><span class="pill"><b>${S.xp}</b> XP</span><span class="pill">🔥 <b>${S.streak}</b></span><span class="pill">📅 <b>${done}</b>/12</span>`;
+}
+function setSyncStatus(t){ document.getElementById("syncstatus").textContent=t; }
+
+/* ===================== 3. VUES ===================== */
+function home(){
+  const done=Object.keys(S.days).length;
+  const nxt=PROG.find(p=>!S.days[p.id]);
+  let h="";
+  if(!storageOK) h+=`<div class="warn">⚠️ Le navigateur bloque la sauvegarde. Votre progression sera perdue en fermant l'onglet. Ouvrez l'app depuis l'adresse en ligne, ou exportez régulièrement.</div>`;
+  h+=`<div class="card"><h2>${nxt?`Prochaine séance : ${nxt.num}. ${esc(nxt.t)}`:"Parcours terminé"}</h2>
+    <p class="muted" style="margin:0 0 12px">${nxt?esc(nxt.obj):"Les 12 séances sont validées. Le mode Examen mesure ce qui reste."}</p>
+    <div class="bar"><i style="width:${Math.round(done/12*100)}%"></i></div>
+    <div class="row">${nxt?`<button class="btn" id="go-next">${nxt.icon} ${S.ex[nxt.id+"-0"]||S.ex[nxt.id+"-m"]?"Reprendre":"Commencer"} · ${nxt.dur}</button>`:""}<button class="btn ghost" id="go-prog">Toutes les séances</button></div></div>`;
+  h+=`<div class="grid">
+    <div class="mode" id="m-prog"><div class="ic">📅</div><b>Programme</b><span>12 séances de 30 min, dans l'ordre, à votre rythme.</span></div>
+    <div class="mode" id="m-quiz"><div class="ic">🎯</div><b>Quiz par thème</b><span>Vérifier ce qui est retenu, thème par thème.</span></div>
+    <div class="mode" id="m-cards"><div class="ic">🃏</div><b>Flashcards</b><span>12 mots à tenir. Les faibles reviennent d'abord.</span></div>
+    <div class="mode" id="m-fiches"><div class="ic">📖</div><b>Fiches</b><span>Tout le contenu, à relire d'une traite.</span></div>
+    <div class="mode" id="m-missions"><div class="ic">🛠️</div><b>Missions terrain</b><span>Le vrai travail, sur vos vrais dossiers. ${Object.keys(S.ex).filter(k=>k.endsWith("-m")).length}/12 faites.</span></div>
+    <div class="mode" id="m-prompts"><div class="ic">📋</div><b>Mes prompts</b><span>Les modèles à copier dans prompts.txt.</span></div>
+  </div>`;
+  if(S.badges.length) h+=`<div class="card" style="margin-top:14px"><h3 style="margin-top:0">Badges</h3>${S.badges.map(b=>`<span class="tag done">🏅 ${esc(b)}</span>`).join(" ")}</div>`;
+  app.innerHTML=h;
+  if(nxt) document.getElementById("go-next").onclick=()=>go(session,nxt.id);
+  document.getElementById("go-prog").onclick=()=>go(program);
+  document.getElementById("m-prog").onclick=()=>go(program);
+  document.getElementById("m-quiz").onclick=()=>go(quizMenu);
+  document.getElementById("m-cards").onclick=()=>go(cards);
+  document.getElementById("m-fiches").onclick=()=>go(fiches);
+  document.getElementById("m-missions").onclick=()=>go(missions);
+  document.getElementById("m-prompts").onclick=()=>go(prompts);
+}
+
+function program(){
+  let h=`<div class="card"><h2>Le programme</h2><p class="muted small" style="margin:0">Une séance = une notion, un geste dans votre outil, un résultat analysé ici, une chose à faire avant la suivante. Les séances se débloquent dans l'ordre.</p></div>`;
+  PROG.forEach((p,i)=>{
+    const done=!!S.days[p.id], locked=i>0&&!S.days[PROG[i-1].id];
+    const nEx=p.prac.length, nOk=p.prac.filter((_,k)=>exDone(p.id+"-"+k)).length;
+    h+=`<div class="lvl ${done?"done":""} ${locked?"locked":""}" data-id="${p.id}"><div class="num">${done?"✓":p.num}</div><div class="ti">${p.icon} ${esc(p.t)}<small>${esc(p.obj)}</small><small>${p.dur} · ${nOk}/${nEx} cas pratiques · mission ${exDone(p.id+"-m")?"faite":"à faire"}</small></div></div>`;
+    if(i<PROG.length-1) h+=`<div class="connector"></div>`;
+  });
+  h+=`<div class="row"><button class="btn ghost" id="back">← Accueil</button></div>`;
+  app.innerHTML=h;
+  document.getElementById("back").onclick=()=>go(home);
+  document.querySelectorAll(".lvl:not(.locked)").forEach(el=>el.onclick=()=>go(session,el.dataset.id));
+}
+
+function session(id){
+  const p=PROG.find(x=>x.id===id); const idx=PROG.indexOf(p);
+  const nOk=p.prac.filter((_,k)=>exDone(p.id+"-"+k)).length, all=nOk===p.prac.length, mOk=exDone(p.id+"-m");
+  let h=`<div class="card"><span class="tag">Séance ${p.num}</span><span class="tag">${p.dur}</span><span class="tag">${CATS[p.cat].icon} ${CATS[p.cat].name}</span>
+    <h2 style="margin-top:10px">${p.icon} ${esc(p.t)}</h2><p class="muted" style="margin:0">${esc(p.obj)}</p></div>`;
+  h+=`<div class="card"><h3 style="margin-top:0">La notion · 8 min</h3><div class="lesson">${p.lesson.map(x=>`<p>${x}</p>`).join("")}</div></div>`;
+  h+=`<div class="card"><h3 style="margin-top:0">Cas pratiques · 20 min <span class="muted small">(${nOk}/${p.prac.length})</span></h3><div id="pracs"></div></div>`;
+  h+=`<div class="card"><h3 style="margin-top:0">Vérifier</h3><p class="muted small" style="margin:0 0 10px">${p.qids.length} questions sur cette séance.</p><button class="btn ghost sm" id="sq">🎯 Lancer les questions</button></div>`;
+  h+=`<div class="card" style="border-color:var(--gold)"><h3 style="margin-top:0">🛠️ Mission terrain <span class="muted small">— sur vos vrais dossiers, hors de l'app</span></h3><div id="mission"></div></div>`;
+  h+=`<div class="row"><button class="btn ghost" id="back">← Programme</button>${all&&mOk&&!S.days[p.id]?`<button class="btn gold" id="finish">Valider la séance · +30 XP</button>`:(!S.days[p.id]?`<span class="tag">${all?"Mission terrain à faire pour valider":"Cas pratiques et mission à terminer"}</span>`:"")}${S.days[p.id]?`<span class="tag done">Séance validée</span>`:""}${idx<PROG.length-1&&S.days[p.id]?`<button class="btn" id="nx">Séance suivante →</button>`:""}</div>`;
+  app.innerHTML=h;
+  const box=document.getElementById("pracs");
+  p.prac.forEach((pr,k)=>{ const d=document.createElement("div"); d.className="card"; d.style.background="#16223a"; box.appendChild(d); renderPrac(d,pr,p.id+"-"+k,()=>go(session,id)); });
+  const mEl=document.getElementById("mission"); const m=Object.assign({type:"write"},p.mission);
+  renderPrac(mEl,m,p.id+"-m",()=>go(session,id));
+  document.getElementById("back").onclick=()=>go(program);
+  document.getElementById("sq").onclick=()=>go(quiz,p.qids,"Séance "+p.num,()=>go(session,id));
+  const f=document.getElementById("finish"); if(f) f.onclick=()=>{ S.days[p.id]=true; save(); addXP(30); award("Séance "+p.num); if(Object.keys(S.days).length===12) award("Parcours complet"); go(session,id); };
+  const n=document.getElementById("nx"); if(n) n.onclick=()=>go(session,PROG[idx+1].id);
+}
+
+/* ---------- moteur de cas pratiques ---------- */
+function renderPrac(el,p,id,refresh){
+  const done=exDone(id);
+  const head=`<h3 style="margin-top:0">${done?"✅ ":""}${esc(p.title)}</h3><p class="small" style="white-space:pre-wrap;margin:0 0 10px">${esc(p.intro||p.situation||"")}</p>`;
+  const R={order,classify,calc,scenario,write,compare}[p.type]; R(el,p,id,head,refresh);
+}
+function order(el,p,id,head,refresh){
+  let cur=shuffled(p.steps); if(cur.join()===p.steps.join()) cur=[...p.steps].reverse();
+  let checked=false;
+  function draw(){
+    el.innerHTML=head+cur.map((s,i)=>`<div class="step ${checked?(s===p.steps[i]?"ok":"ko"):""}"><div class="tx">${i+1}. ${esc(s)}</div><div class="ar"><button data-i="${i}" data-d="-1">▲</button><button data-i="${i}" data-d="1">▼</button></div></div>`).join("")
+      +`<div class="row"><button class="btn sm" id="chk">Vérifier l'ordre</button>${checked&&cur.join()!==p.steps.join()?`<button class="btn ghost sm" id="sol">Voir la solution</button>`:""}</div><div id="res"></div>`;
+    el.querySelectorAll(".ar button").forEach(b=>b.onclick=()=>{ const i=+b.dataset.i,j=i+ +b.dataset.d; if(j<0||j>=cur.length) return; [cur[i],cur[j]]=[cur[j],cur[i]]; checked=false; draw(); });
+    el.querySelector("#chk").onclick=()=>{ checked=true; const ok=cur.join()===p.steps.join(); draw(); el.querySelector("#res").innerHTML=`<div class="expl ${ok?"ok":"ko"}">${ok?"Ordre correct.":"Les lignes en rouge ne sont pas à leur place. Réfléchissez à ce qui doit précéder quoi, puis revérifiez."}</div>`; if(ok){ markEx(id); refresh&&setTimeout(refresh,900);} };
+    const s=el.querySelector("#sol"); if(s) s.onclick=()=>{ cur=[...p.steps]; checked=true; draw(); };
+  }
+  draw();
+}
+function classify(el,p,id,head,refresh){
+  const sel={}; let checked=false;
+  function draw(){
+    el.innerHTML=head+p.items.map((it,i)=>`<div class="cls ${checked?(sel[i]===it.a?"ok":"ko"):""}"><div class="tx">${esc(it.t)}</div><div class="bk">${p.buckets.map((b,j)=>`<button data-i="${i}" data-j="${j}" class="${sel[i]===j?"sel":""}">${esc(b)}</button>`).join("")}</div></div>`).join("")
+      +`<div class="row"><button class="btn sm" id="chk">Vérifier</button></div><div id="res"></div>`;
+    el.querySelectorAll(".bk button").forEach(b=>b.onclick=()=>{ sel[b.dataset.i]=+b.dataset.j; checked=false; draw(); });
+    el.querySelector("#chk").onclick=()=>{ if(Object.keys(sel).length<p.items.length){ toast("Classez tous les éléments"); return; } checked=true; const n=p.items.filter((it,i)=>sel[i]===it.a).length; draw(); const ok=n===p.items.length; el.querySelector("#res").innerHTML=`<div class="expl ${ok?"ok":"ko"}">${n}/${p.items.length} bien classés.${ok?"":" Les rouges : relisez la notion, corrigez, revérifiez."}</div>`; if(ok){ markEx(id); refresh&&setTimeout(refresh,900);} };
+  }
+  draw();
+}
+function calc(el,p,id,head,refresh){
+  el.innerHTML=head+`<p style="margin:0 0 8px"><b>${esc(p.question)}</b></p><input type="number" step="any" id="v" placeholder="Votre réponse"><div class="row"><button class="btn sm" id="chk">Vérifier</button></div><div id="res"></div>`;
+  el.querySelector("#chk").onclick=()=>{ const v=parseFloat(String(el.querySelector("#v").value).replace(",",".")); const ok=!isNaN(v)&&Math.abs(v-p.answer)<=(p.tol||0)+1e-9; el.querySelector("#res").innerHTML=`<div class="expl ${ok?"ok":"ko"}">${ok?`Juste : ${p.answer}.`:`Pas ça. ${esc(p.hint)}`}</div>`; if(ok){ markEx(id); refresh&&setTimeout(refresh,900);} };
+}
+function scenario(el,p,id,head,refresh){
+  el.innerHTML=head+p.options.map((o,i)=>`<button class="opt" data-i="${i}">${esc(o)}</button>`).join("")+`<div id="res"></div>`;
+  el.querySelectorAll(".opt").forEach(b=>b.onclick=()=>{ const i=+b.dataset.i, ok=i===p.a; el.querySelectorAll(".opt").forEach((x,j)=>{ x.disabled=true; if(j===p.a) x.classList.add("correct"); else if(j===i) x.classList.add("wrong"); else x.classList.add("dim"); }); el.querySelector("#res").innerHTML=`<div class="expl ${ok?"ok":"ko"}">${esc(p.e)}</div>`; if(ok){ markEx(id); refresh&&setTimeout(refresh,1200);} else { el.querySelector("#res").innerHTML+=`<div class="row"><button class="btn ghost sm" id="re">Réessayer</button></div>`; el.querySelector("#re").onclick=()=>scenario(el,p,id,head,refresh); } });
+}
+function compare(el,p,id,head,refresh){
+  el.innerHTML=head+`<p class="small muted" style="margin:0">Cliquez sur la réponse à ne pas utiliser.</p><div class="cmp"><div class="rep" data-i="0"><b>Réponse A</b>${esc(p.a)}</div><div class="rep" data-i="1"><b>Réponse B</b>${esc(p.b)}</div></div><div id="res"></div>`;
+  el.querySelectorAll(".rep").forEach(r=>r.onclick=()=>{ const i=+r.dataset.i, ok=i===p.bad; el.querySelectorAll(".rep").forEach((x,j)=>{ x.onclick=null; x.classList.add(j===p.bad?"bad":"good"); }); el.querySelector("#res").innerHTML=`<div class="expl ${ok?"ok":"ko"}">${ok?"Bien vu. ":"Non — c'est l'autre. "}${esc(p.why)}</div><div class="expl" style="margin-top:8px"><b>Les indices :</b><ul style="margin:6px 0 0 18px;padding:0">${p.tells.map(t=>`<li>${esc(t)}</li>`).join("")}</ul></div>`; if(ok){ markEx(id); refresh&&setTimeout(refresh,1500);} else { el.querySelector("#res").innerHTML+=`<div class="row"><button class="btn ghost sm" id="re">Réessayer</button></div>`; el.querySelector("#re").onclick=()=>compare(el,p,id,head,refresh); } });
+}
+function write(el,p,id,head,refresh){
+  el.innerHTML=head+`<textarea id="ta" placeholder="Écrivez ici. Votre brouillon est conservé.">${esc(S.drafts[id]||"")}</textarea><div class="row"><button class="btn sm" id="chk">Analyser mon texte</button><span class="small muted">${p.criteres.length} critères · ${Math.ceil(p.criteres.length*0.75)} suffisent</span></div><div id="res"></div>`;
+  const ta=el.querySelector("#ta"); ta.oninput=()=>{ S.drafts[id]=ta.value; saveLocal(); };
+  el.querySelector("#chk").onclick=()=>{
+    const txt=ta.value.trim(); if(txt.length<20){ toast("Écrivez d'abord quelques lignes"); return; }
+    const t=nz(txt); const res=p.criteres.map(c=>({c,ok:!!c.test(t)})); const ok=res.filter(r=>r.ok).length, n=res.length, seuil=Math.ceil(n*0.75);
+    el.querySelector("#res").innerHTML=`<div style="margin-top:12px">${res.map(r=>`<div class="crit"><div class="mk">${r.ok?"✅":"⬜"}</div><div>${esc(r.c.label)}${r.ok?"":`<span class="aide">${esc(r.c.aide)}</span>`}</div></div>`).join("")}</div>
+      <div class="expl ${ok>=seuil?"ok":"ko"}">${ok}/${n} critères. ${ok>=seuil?"Validé.":"Complétez les critères manquants, puis relancez l'analyse."}</div>
+      <h3>Un modèle, pour comparer</h3><div class="modele">${esc(p.modele)}</div>${p.conseil?`<div class="expl" style="margin-top:10px">💡 ${esc(p.conseil)}</div>`:""}`;
+    if(ok>=seuil){ markEx(id); refresh&&setTimeout(refresh,2500); }
+  };
+}
+
+/* ---------- quiz ---------- */
+function quizMenu(){
+  let h=`<div class="card"><h2>Quiz par thème</h2><p class="muted small" style="margin:0">8 questions au hasard par thème. 80 % de bonnes réponses = badge du thème.</p></div><div class="grid">`;
+  Object.entries(CATS).forEach(([k,c])=>{ const n=Q.filter(q=>q.c===k).length, sc=S.catScore[k]; h+=`<div class="mode" data-c="${k}"><div class="ic">${c.icon}</div><b>${esc(c.name)}</b><span>${n} questions${sc!=null?` · meilleur ${sc} %`:""}</span></div>`; });
+  h+=`</div><div class="row"><button class="btn ghost" id="back">← Accueil</button></div>`;
+  app.innerHTML=h; document.getElementById("back").onclick=()=>go(home);
+  document.querySelectorAll(".mode").forEach(m=>m.onclick=()=>{ const k=m.dataset.c; const ids=shuffled(Q.filter(q=>q.c===k).map(q=>q.id)).slice(0,8); go(quiz,ids,CATS[k].name,()=>go(quizMenu),k); });
+}
+function quiz(ids,title,back,cat){
+  let i=0, score=0, order_=[...ids];
+  function step(){
+    if(i>=order_.length){ const pct=Math.round(score/order_.length*100); if(cat){ S.catScore[cat]=Math.max(S.catScore[cat]||0,pct); save(); if(pct>=80) award(CATS[cat].name); } app.innerHTML=`<div class="card" style="text-align:center"><div class="big">${score}/${order_.length}</div><p>${pct>=80?"Solide.":pct>=60?"Ça tient. Relisez les explications ratées.":"Reprenez la fiche du thème avant de relancer."}</p><div class="row" style="justify-content:center"><button class="btn" id="again">Recommencer</button><button class="btn ghost" id="bk">Retour</button></div></div>`; document.getElementById("again").onclick=()=>go(quiz,shuffled(ids),title,back,cat); document.getElementById("bk").onclick=back; return; }
+    const q=Q[order_[i]];
+    app.innerHTML=`<div class="card"><div class="row" style="margin:0 0 10px;justify-content:space-between"><span class="tag">${esc(title)} · ${i+1}/${order_.length}</span><span class="tag">${CATS[q.c].icon} ${"●".repeat(q.d)}</span></div><div class="bar"><i style="width:${Math.round(i/order_.length*100)}%"></i></div><h2 style="margin-top:16px;font-size:17px">${esc(q.q)}</h2>${q.o.map((o,j)=>`<button class="opt" data-j="${j}">${esc(o)}</button>`).join("")}<div id="res"></div></div>`;
+    document.querySelectorAll(".opt").forEach(b=>b.onclick=()=>{ const j=+b.dataset.j, ok=j===q.a; if(ok){score++; addXP(10);} bumpBox(q.id,ok); document.querySelectorAll(".opt").forEach((x,k)=>{ x.disabled=true; if(k===q.a) x.classList.add("correct"); else if(k===j) x.classList.add("wrong"); else x.classList.add("dim"); }); document.getElementById("res").innerHTML=`<div class="expl ${ok?"ok":"ko"}">${esc(q.e)}</div><div class="row"><button class="btn" id="nx">${i+1<order_.length?"Suivante →":"Résultat"}</button></div>`; document.getElementById("nx").onclick=()=>{ i++; step(); }; });
+  }
+  step();
+}
+/* ---------- flashcards ---------- */
+function bumpBox(id,ok){ const k="q"+id; S.boxes[k]=ok?Math.min(5,(S.boxes[k]||1)+1):1; save(); }
+function cards(){
+  const deck=CARDS.map((f,i)=>({f,i})).sort((a,b)=>((S.boxes["c"+a.i]||1)-(S.boxes["c"+b.i]||1))||Math.random()-0.5);
+  let i=0, flipped=false;
+  function draw(){
+    if(i>=deck.length){ app.innerHTML=`<div class="card" style="text-align:center"><h2>Série terminée</h2><p class="muted">Les cartes ratées reviendront en premier la prochaine fois.</p><div class="row" style="justify-content:center"><button class="btn" id="ag">Nouvelle série</button><button class="btn ghost" id="bk">← Accueil</button></div></div>`; document.getElementById("ag").onclick=()=>go(cards); document.getElementById("bk").onclick=()=>go(home); return; }
+    const c=deck[i]; const lv=S.boxes["c"+c.i]||1;
+    app.innerHTML=`<div class="row" style="margin:0 0 10px;justify-content:space-between"><span class="tag">Carte ${i+1}/${deck.length}</span><span class="tag">maîtrise ${lv}/5${lv>=4?" · acquise":""}</span></div><div class="fc" id="fc">${flipped?esc(c.f.b):`<b>${esc(c.f.f)}</b>`}<small>${flipped?"":"Toucher pour retourner"}</small></div>
+      ${flipped?`<div class="row"><button class="btn ghost" id="no">Je ne savais pas</button><button class="btn" id="yes">Je savais · +5 XP</button></div>`:`<div class="row"><button class="btn ghost" id="bk">← Accueil</button></div>`}`;
+    document.getElementById("fc").onclick=()=>{ flipped=!flipped; draw(); };
+    const y=document.getElementById("yes"), n=document.getElementById("no"), b=document.getElementById("bk");
+    if(y) y.onclick=()=>{ S.boxes["c"+c.i]=Math.min(5,lv+1); addXP(5); i++; flipped=false; draw(); };
+    if(n) n.onclick=()=>{ S.boxes["c"+c.i]=1; save(); i++; flipped=false; draw(); };
+    if(b) b.onclick=()=>go(home);
+  }
+  draw();
+}
+
+/* ---------- fiches ---------- */
+function fiches(){
+  app.innerHTML=`<div class="card"><h2>Fiches</h2><p class="muted small" style="margin:0">Une par thème. Le contenu du parcours, condensé.</p></div>`+CHAPTERS.map(c=>`<div class="lvl ${S.chaptersDone.includes(c.id)?"done":""}" data-id="${c.id}"><div class="num">${c.icon}</div><div class="ti">${esc(c.t)}<small>${c.lesson.length} paragraphes</small></div></div><div class="connector"></div>`).join("")+`<div class="row"><button class="btn ghost" id="back">← Accueil</button></div>`;
+  document.getElementById("back").onclick=()=>go(home);
+  document.querySelectorAll(".lvl").forEach(el=>el.onclick=()=>go(fiche,el.dataset.id));
+}
+function fiche(id){
+  const c=CHAPTERS.find(x=>x.id===id); const i=CHAPTERS.indexOf(c);
+  app.innerHTML=`<div class="card"><h2>${c.icon} ${esc(c.t)}</h2><div class="lesson">${c.lesson.map(p=>`<p>${p}</p>`).join("")}</div></div><div class="row"><button class="btn ghost" id="back">← Fiches</button><button class="btn" id="q">🎯 Quiz du thème</button>${i<CHAPTERS.length-1?`<button class="btn ghost" id="nx">Fiche suivante →</button>`:""}</div>`;
+  if(!S.chaptersDone.includes(id)){ S.chaptersDone.push(id); save(); }
+  document.getElementById("back").onclick=()=>go(fiches);
+  document.getElementById("q").onclick=()=>{ const ids=shuffled(Q.filter(q=>q.c===c.cat).map(q=>q.id)).slice(0,8); go(quiz,ids,c.t,()=>go(fiche,id),c.cat); };
+  const n=document.getElementById("nx"); if(n) n.onclick=()=>go(fiche,CHAPTERS[i+1].id);
+}
+
+/* ---------- missions ---------- */
+function missions(){
+  const done=PROG.filter(p=>exDone(p.id+"-m")).length;
+  let h=`<div class="card"><h2>Missions terrain</h2><p class="muted small" style="margin:0 0 10px">Une par séance, sur vos vrais mails, vos vrais fichiers, vos vrais associés. C'est le parcours ; le reste est de la préparation.</p><div class="bar"><i style="width:${Math.round(done/12*100)}%"></i></div></div>`;
+  PROG.forEach((p,i)=>{ const ok=exDone(p.id+"-m"), locked=i>0&&!S.days[PROG[i-1].id]; h+=`<div class="lvl ${ok?"done":""} ${locked?"locked":""}" data-id="${p.id}"><div class="num">${ok?"✓":p.num}</div><div class="ti">${esc(p.mission.title)}<small>${esc(p.mission.intro.split(".")[0])}.</small></div></div>${i<PROG.length-1?'<div class="connector"></div>':""}`; });
+  h+=`<div class="row"><button class="btn ghost" id="back">← Accueil</button></div>`;
+  app.innerHTML=h; document.getElementById("back").onclick=()=>go(home);
+  document.querySelectorAll(".lvl:not(.locked)").forEach(el=>el.onclick=()=>{ go(session,el.dataset.id); setTimeout(()=>{ const m=document.getElementById("mission"); m&&m.scrollIntoView({behavior:"smooth"}); },50); });
+}
+
+/* ---------- mes prompts ---------- */
+function prompts(){
+  const list=[]; PROG.forEach(p=>p.prac.forEach(pr=>{ if(pr.type==="write"&&/prompt|instructions|brief|demande/i.test(pr.title)) list.push({s:p,pr}); }));
+  app.innerHTML=`<div class="card"><h2>Mes prompts</h2><p class="muted small" style="margin:0">Les modèles du parcours, à copier dans prompts.txt et à adapter. Un prompt réutilisé ne se retape jamais.</p></div>`
+    +list.map((x,i)=>`<div class="card"><span class="tag">Séance ${x.s.num}</span><h3 style="margin-top:8px">${esc(x.pr.title)}</h3><div class="modele">${esc(x.pr.modele)}</div><div class="row"><button class="btn ghost sm" data-i="${i}">Copier</button></div></div>`).join("")
+    +`<div class="row"><button class="btn ghost" id="back">← Accueil</button></div>`;
+  document.getElementById("back").onclick=()=>go(home);
+  document.querySelectorAll("[data-i]").forEach(b=>b.onclick=async()=>{ try{ await navigator.clipboard.writeText(list[+b.dataset.i].pr.modele); toast("Copié"); }catch(e){ toast("Sélectionnez le texte et copiez-le"); } });
+}
+
+/* ===================== 4. SYNC ===================== */
+let CFG=(()=>{ try{ return Object.assign({url:"",token:"",auto:true},JSON.parse(localStorage.getItem(SYNC_KEY))||{}); }catch(e){ return {url:"",token:"",auto:true}; } })();
+const syncConfigured=()=>!!(CFG.url&&CFG.token);
+async function cloudLoad(){ const u=CFG.url+(CFG.url.includes("?")?"&":"?")+"action=load&user="+SYNC_USER+"&token="+encodeURIComponent(CFG.token)+"&_="+Date.now(); const j=await (await fetch(u,{method:"GET",redirect:"follow"})).json(); if(!j.ok) throw new Error(j.error||"refus"); return j.data||null; }
+async function cloudSave(){ const j=await (await fetch(CFG.url,{method:"POST",redirect:"follow",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({action:"save",user:SYNC_USER,token:CFG.token,data:S})})).json(); if(!j.ok) throw new Error(j.error||"refus"); }
+let pushT; function schedulePush(){ if(!syncConfigured()||!CFG.auto) return; clearTimeout(pushT); pushT=setTimeout(async()=>{ try{ await cloudSave(); setSyncStatus("☁️ synchronisé "+hhmm()); }catch(e){ setSyncStatus("☁️ échec (hors ligne ?)"); } },1500); }
+function hasProgress(o){ return !!(o&&((o.xp||0)>0||Object.keys(o.days||{}).length||Object.keys(o.ex||{}).length)); }
+async function syncOnStart(){ if(!syncConfigured()) return setSyncStatus("☁️ sync non configurée"); try{ const d=await cloudLoad(); const remote=d&&d.updatedAt?d.updatedAt:0, local=S.updatedAt||0; if(d&&hasProgress(d)&&(remote>local||!hasProgress(S))){ S=Object.assign({},DEF,d); saveLocal(); syncHeader(); go(home); toast("☁️ Progression chargée"); } else if(hasProgress(S)&&(!d||local>remote)){ await cloudSave(); } setSyncStatus("☁️ synchronisé "+hhmm()); }catch(e){ setSyncStatus("☁️ hors ligne"); } }
+function cfgView(){
+  app.innerHTML=`<div class="card"><h2>Synchronisation</h2><p class="muted small">Même progression sur le PC du bureau et sur l'iPhone. Collez l'adresse et le code donnés par Thomas. Une fois, puis c'est automatique.</p>
+    <label class="small muted">Adresse du script</label><input type="url" id="u" value="${esc(CFG.url)}" placeholder="https://script.google.com/macros/s/…/exec">
+    <label class="small muted" style="display:block;margin-top:10px">Code</label><input type="text" id="t" value="${esc(CFG.token)}" placeholder="le code reçu">
+    <div class="row"><button class="btn" id="sv">Enregistrer</button><button class="btn ghost" id="test">Tester la connexion</button></div>
+    <div class="row"><button class="btn ghost sm" id="ld">Charger depuis le cloud</button><button class="btn ghost sm" id="up">Envoyer vers le cloud</button></div><div id="res"></div>
+    <div class="row"><button class="btn ghost" id="back">← Accueil</button></div></div>`;
+  const R=m=>document.getElementById("res").innerHTML=`<div class="expl">${esc(m)}</div>`;
+  const readCfg=()=>{ CFG.url=document.getElementById("u").value.trim(); CFG.token=document.getElementById("t").value.trim(); try{ localStorage.setItem(SYNC_KEY,JSON.stringify(CFG)); }catch(e){} };
+  document.getElementById("sv").onclick=()=>{ readCfg(); toast("Enregistré"); syncOnStart(); };
+  document.getElementById("test").onclick=async()=>{ readCfg(); try{ await cloudLoad(); R("Connexion OK."); }catch(e){ R("Échec : "+e.message+". Vérifiez l'adresse (elle finit par /exec) et le code."); } };
+  document.getElementById("ld").onclick=async()=>{ readCfg(); try{ const d=await cloudLoad(); if(!d){ R("Rien dans le cloud pour l'instant."); return; } S=Object.assign({},DEF,d); saveLocal(); syncHeader(); R("Progression chargée."); }catch(e){ R("Échec : "+e.message); } };
+  document.getElementById("up").onclick=async()=>{ readCfg(); try{ await cloudSave(); R("Envoyé."); setSyncStatus("☁️ synchronisé "+hhmm()); }catch(e){ R("Échec : "+e.message); } };
+  document.getElementById("back").onclick=()=>go(home);
+}
+function exportProgress(){ const blob=new Blob([JSON.stringify(S,null,2)],{type:"application/json"}); const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="progression-renaud.json"; document.body.appendChild(a); a.click(); a.remove(); toast("💾 Progression exportée"); }
+function importProgress(file){ const r=new FileReader(); r.onload=()=>{ try{ S=Object.assign({},DEF,JSON.parse(r.result)); save(); syncHeader(); go(home); toast("Progression importée"); }catch(e){ alert("Fichier invalide."); } }; r.readAsText(file); }
+
+/* ===================== 5. INIT ===================== */
+probeStorage(); touchStreak(); syncHeader(); home();
+document.getElementById("home-link").onclick=()=>go(home);
+document.getElementById("exportlink").onclick=exportProgress;
+document.getElementById("importlink").onclick=()=>document.getElementById("importfile").click();
+document.getElementById("importfile").onchange=e=>{ if(e.target.files[0]) importProgress(e.target.files[0]); };
+document.getElementById("cfglink").onclick=()=>go(cfgView);
+syncOnStart();
+if("serviceWorker" in navigator && location.protocol.startsWith("http")){ navigator.serviceWorker.register("./sw.js").catch(()=>{}); }
+window.__D={PROG,Q,CATS,CHAPTERS,CARDS,MISSIONS,get S(){return S},nz,go,home,session,cfgView,missions};
+/* test de cohérence des modèles (console) */
+PROG.forEach(d=>[...d.prac,d.mission].forEach((p,k)=>{ if(p.type&&p.type!=="write") return; const fails=p.criteres.filter(c=>!c.test(nz(p.modele))).map(c=>c.label); if(fails.length) console.warn("⚠ modèle "+d.id+"-"+k+" :",fails); }));
+</script>
+</body>
+</html>
